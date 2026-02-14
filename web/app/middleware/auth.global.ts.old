@@ -1,0 +1,11 @@
+// middleware/auth.global.ts
+export default defineNuxtRouteMiddleware((to) => {
+    const { token } = useAuthState()
+
+    // login/register は弾かない（無限リダイレクト防止）
+    if (to.path === '/login' || to.path === '/register') return
+
+    if (!token.value) {
+        return navigateTo(`/login?next=${encodeURIComponent(to.fullPath)}`)
+    }
+})

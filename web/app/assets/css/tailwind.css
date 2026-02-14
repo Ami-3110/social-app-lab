@@ -1,0 +1,40 @@
+/* app/assets/css/tailwind.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* background */
+  .ui-bg {
+    @apply bg-white dark:bg-zinc-800;
+  }
+
+  /* surface */
+  .ui-card {
+    @apply bg-white dark:bg-zinc-800;
+  }
+  .ui-card-hover {
+  @apply hover:bg-zinc-50 dark:hover:bg-zinc-700/50;
+  }
+
+  /* text */
+  .ui-text {
+    @apply text-zinc-900 dark:text-zinc-100;
+  }
+  .ui-muted {
+    @apply text-zinc-600 dark:text-zinc-400;
+  }
+
+  /* border */
+  .ui-border {
+    @apply border border-zinc-200 dark:border-zinc-600;
+  }
+
+  /* menu */
+  .ui-menu {
+    @apply bg-white dark:bg-zinc-800;
+  }
+  .ui-menu-item {
+    @apply hover:bg-zinc-50 dark:hover:bg-zinc-800/50;
+  }
+}
