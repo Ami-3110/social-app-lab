@@ -101,7 +101,7 @@ const emit = defineEmits(['like', 'comment', 'repost', 'bookmark'] as const)
 type EventName = 'like' | 'comment' | 'repost' | 'bookmark'
 
 const on = (name: EventName, e?: MouseEvent) => {
-  if (props.stopPropagation && e) e.stopPropagation()
+  if (props.stopPropagation && e) e?.stopPropagation()
   emit(name)
 }
 

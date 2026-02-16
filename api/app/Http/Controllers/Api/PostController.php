@@ -9,10 +9,18 @@ use Illuminate\Http\Request;
 class PostController extends Controller
 {
     public function index(Request $request)
-    {      
+    {
+      $me = $request->user();
+      
+      if(!$me){
+        return response()->json(['message' => 'Unauthenticated.'],401);
+      }
+
       $topic = $request->query('topic');
       $tab = $request->query('tab', 'All');
-      $me = $request->user();
+      $userId = $request->query('user_id');
+
+      $meId = $me->id;
 
       $query = Post::query()
         ->latest()
@@ -26,22 +34,27 @@ class PostController extends Controller
           'reposts as reposts_count',
 
           'likedUsers as is_liked' =>
-          fn($q) => $q->where('user_id', $me->id),
+          fn($q) => $q->where('user_id', $meId),
 
           'bookmarkedBy as is_bookmarked' =>
-          fn($q) => $q->where('user_id', $me->id),
+          fn($q) => $q->where('user_id', $meId),
 
           'reposts as is_reposted' =>
-          fn($q) => $q->where('user_id', $me->id),
+          fn($q) => $q->where('user_id', $meId),
         ])
 
-        // ✅ Following
+        // Following
         ->when($tab === 'Following', function ($q) use ($me) {
           $followingIds = $me->following()->select('users.id');
-
           $q->whereIn('user_id', $followingIds);
         })
 
+        // Profile (User filter)
+        ->when($request->filled('user_id'), function ($q) use ($userId) {
+          $q->where('user_id', (int) $userId);
+        })
+
+        // topic
         ->when($topic, function ($q) use ($topic) {
           $t = trim((string) $topic);
           if ($t === '' || $t === '__none__') {

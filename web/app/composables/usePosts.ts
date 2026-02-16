@@ -13,6 +13,7 @@ type TimelineTab = 'All' | 'Following' | 'For you' | 'Topic'
 
 type UsePostsOptions = {
   tab?: () => TimelineTab
+  userId?: () => number | null
 }
 
 export const usePosts = (options: UsePostsOptions = {}) => {
@@ -51,6 +52,9 @@ export const usePosts = (options: UsePostsOptions = {}) => {
       tab,
     }
 
+    const uid = options.userId?.()
+    if (uid) p.user_id = uid
+    
     if (tab === 'Topic') {
       if (topic.value) p.topic = topic.value
       else p.topic = '__none__' // topic 未指定時の識別用

@@ -1,6 +1,6 @@
 <!-- app/components/PostCard.vue -->
 <template>
-  <li class="p-5 rounded-xl ui-border ui-card ui-text ui-card-hover shadow-sm hover:shadow-md transition">
+  <div class="p-5 rounded-xl ui-border ui-card ui-text ui-card-hover shadow-sm hover:shadow-md transition">
     <!-- カード全体クリックで詳細へ -->
     <div @click="navigateTo(`/posts/${post.id}`)" class="cursor-pointer">
       <!-- 上段：投稿者情報 -->
@@ -94,24 +94,21 @@
           #{{ post.topic }}
         </button>
       </div>
-
     </div>
-    <ActionBar
-      :is-liked="post.is_liked"
-      :likes-count="post.likes_count ?? 0"
-      :comments-count="post.comments_count ?? 0"
-      :reposts-count="post.reposts_count ?? 0"
-      :is-bookmarked="isBookmarked"
-      :show-repost-button="true"
-      :repost-disabled="false"
-      @like="onClickLike"
-      @comment.stop="navigateTo({ path: `/posts/${post.id}`, query: { focus: 'comment' } })"
-      @repost="emit('open-repost', post)"
-      @bookmark="ToggleBookmark"
-    />
-
-
-  </li>
+      <ActionBar
+        :is-liked="post.is_liked"
+        :likes-count="post.likes_count ?? 0"
+        :comments-count="post.comments_count ?? 0"
+        :reposts-count="post.reposts_count ?? 0"
+        :is-bookmarked="isBookmarked"
+        :show-repost-button="true"
+        :repost-disabled="false"
+        @like="onClickLike"
+        @comment="emit('toggle-comment', post.id)"
+        @repost="emit('open-repost', post)"
+        @bookmark="ToggleBookmark"
+      />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -140,8 +137,9 @@ const emit = defineEmits<{
   (e: 'toggle-like', postId: number, nextLiked: boolean): void
   (e: 'bookmark-changed', payload: { postId: number; isBookmarked: boolean }): void
   (e: 'open-repost', post: Post): void
-
+  (e: 'toggle-comment', postId: number): void
 }>()
+
 // Like
 const onClickLike = () => {
   const nextLiked = Number(props.post.is_liked ?? 0) !== 1

@@ -43,11 +43,29 @@
               <PostCard
                 :post="post"
                 :show-menu="true"
-                @toggle-like="onToggleLike"                
+                @toggle-like="onToggleLike"
+                @toggle-comment="onToggleComment"
                 @bookmark-changed="onBookmarkChanged"
                 @delete="onDelete"
                 @open-repost="openRepostModal"
               />
+              <div v-if="activeCommentPostId === post.id" class="mt-3">
+                <textarea
+                  v-model="commentBody"
+                  rows="2"
+                  class="w-full rounded ui-border ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
+                  placeholder="Write a comment..."
+                />
+
+                <div class="flex justify-end mt-2">
+                  <button
+                    class="px-3 py-1 text-sm ui-border rounded"
+                    @click="submitComment(post.id)"
+                  >
+                    Post
+                  </button>
+                </div>
+              </div>
             </li>
           </ul>
 
@@ -159,7 +177,6 @@ const activeTab = ref<TimelineTab>('All')
 const {
   data,
   pending,
-  error,
   topic,
   go,
   refresh,
@@ -171,6 +188,7 @@ const {
 
 const { $apiFetch } = useNuxtApp()
 
+// like
 const preserveScroll = async (fn: () => Promise<void>) => {
   const y = window.scrollY
   await fn()
@@ -187,6 +205,7 @@ const onToggleLike = async (postId: number, nextLiked: boolean) => {
   })
 }
 
+// bookmark
 const onBookmarkChanged = async () => {
   await preserveScroll(async () => {
     await refresh()
@@ -197,6 +216,30 @@ watch(data, (val) => {
   console.log('DATA STRUCTURE:', JSON.stringify(val, null, 2))
 })
 
+// comment
+const activeCommentPostId = ref<number | null>(null)
+const onToggleComment = (postId: number) => {
+  console.log('toggle comment for', postId)
+  activeCommentPostId.value =
+    activeCommentPostId.value === postId ? null : postId
+}
+const commentBody = ref('')
+
+const submitComment = async (postId: number) => {
+  const body = commentBody.value.trim()
+  if (!body) return
+
+  await preserveScroll(async () => {
+    await $apiFetch(`/posts/${postId}/comments`, {
+      method: 'POST',
+      body: { body },
+    })
+
+    commentBody.value = ''
+    activeCommentPostId.value = null
+    await refresh()
+  })
+}
 
 // Repost modal state
 const repostModalOpen = ref(false)
@@ -231,6 +274,7 @@ const submitRepost = async () => {
 
   closeRepostModal()
 }
+
 import { onBeforeUnmount, onMounted } from 'vue'
 
 const onKeydown = (e: KeyboardEvent) => {
@@ -239,6 +283,5 @@ const onKeydown = (e: KeyboardEvent) => {
 
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
-
 
 </script>
