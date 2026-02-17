@@ -32,5 +32,9 @@ class Comment extends Model
       ->withTimestamps(); 
   }
 
-  
+  public function bookmarks()
+  {
+    return $this->hasMany(CommentBookmark::class);
+  }
+
 }

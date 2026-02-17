@@ -146,8 +146,15 @@
             v-for="c in comments"
             :key="c.id"
             :comment="c"
+            :me-id="myUserId ?? null"
             @like="onClickCommentLike"
+            @comment="onClickCommentReply"
+            @repost="onClickCommentRepost"
+            @bookmark="onClickCommentBookmark"
+            @updated="onCommentUpdated"
+            @deleted="onCommentDeleted"
           />
+
         </div>
       </div>
       <!-- Repost Modal -->
@@ -214,6 +221,7 @@ import { usePost } from '~/composables/usePost'
 import type { Comment } from '~/types/Comment'
 import { useRoute } from 'vue-router'
 import { useAuthState } from '~/composables/useAuth'
+
 
 // NuxtApp
 const { $apiFetch } = useNuxtApp() // ← これが必要（ここでlike/bookmark叩くため）
@@ -365,7 +373,7 @@ const onDeleteComment = async (commentId: number) => {
   }
 }
 
-// Comments list
+// Comment like
 const onClickCommentLike = async (commentId: number) => {
   const c = comments.value.find(x => Number(x.id) === Number(commentId))
   const liked = Number(c?.is_liked ?? 0) === 1
@@ -376,6 +384,24 @@ const onClickCommentLike = async (commentId: number) => {
 
   await refreshComments()
 }
+
+// Comment reply
+
+
+// Comment repost
+
+// Comment bookmark
+const onClickCommentBookmark = async (commentId: number) => {
+  const c = comments.value.find(x => Number(x.id) === Number(commentId))
+  const bookmarked = Boolean(c?.is_bookmarked)
+
+  await $apiFetch(`/comments/${commentId}/bookmark`, {
+    method: bookmarked ? 'DELETE' : 'POST',
+  })
+
+  await refreshComments()
+}
+
 
 // Focus comment input if ?focus=comment
 onMounted(async () => {
@@ -395,6 +421,23 @@ watch(post, async (p) => {
 const focusCommentInput = async () => {
   await nextTick()
   commentInputRef.value?.focus()
+}
+
+//未実装のやつ
+const onClickCommentReply = (commentId: number) => {
+  alert('Reply is not implemented yet.')
+}
+
+const onClickCommentRepost = (commentId: number) => {
+  alert('Comment repost is not implemented yet.')
+}
+
+const onCommentUpdated = async () => {
+  await refreshComments()
+}
+
+const onCommentDeleted = async () => {
+  await refreshComments()
 }
 
 </script>

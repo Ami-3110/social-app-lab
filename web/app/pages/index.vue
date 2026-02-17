@@ -48,24 +48,41 @@
                 @bookmark-changed="onBookmarkChanged"
                 @delete="onDelete"
                 @open-repost="openRepostModal"
-              />
-              <div v-if="activeCommentPostId === post.id" class="mt-3">
-                <textarea
-                  v-model="commentBody"
-                  rows="2"
-                  class="w-full rounded ui-border ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
-                  placeholder="Write a comment..."
-                />
+              >
+                <template #below-actions>
+                  <!-- posted comment -->
+                  <CommentCard
+                    v-if="justPosted?.postId === post.id"
+                    :comment="justPosted.comment"
+                    :me-id="myUserId"
+                    variant="compact"
+                    @like="onClickCommentLike"
+                    @comment="onClickCommentReply"
+                    @repost="onClickCommentRepost"
+                    @bookmark="onClickCommentBookmark"
+                    @updated="onCommentUpdated"
+                    @deleted="onCommentDeleted"
+                  />
+                  <!-- comment form -->
+                  <div v-if="activeCommentPostId === post.id" class="mt-3">
+                    <textarea
+                      v-model="commentBodies[post.id]"
+                      rows="2"
+                      class="w-full rounded ui-border ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
+                      placeholder="Write a comment..."
+                    />
+                    <div class="flex justify-end mt-2">
+                      <button
+                        class="px-3 py-1 text-sm ui-border ui-text rounded"
+                        @click="submitComment(post.id)"
+                      >
+                        Post
+                      </button>
+                    </div>
+                  </div>
 
-                <div class="flex justify-end mt-2">
-                  <button
-                    class="px-3 py-1 text-sm ui-border rounded"
-                    @click="submitComment(post.id)"
-                  >
-                    Post
-                  </button>
-                </div>
-              </div>
+                </template>
+              </PostCard>
             </li>
           </ul>
 
@@ -167,9 +184,14 @@ definePageMeta({
   middleware: 'auth',
 })
 
+import type { Comment } from '~/types/Comment'
 import { ref, watch, nextTick } from 'vue'
 import { usePosts } from '~/composables/usePosts'
 import type { Post } from '~/types/Post'
+import { useAuthState } from '~/composables/useAuth'
+
+const { user } = useAuthState()
+const myUserId = computed(() => user.value?.id ?? null)
 
 type TimelineTab = 'All' | 'Following' | 'For you' | 'Topic'
 const activeTab = ref<TimelineTab>('All')
@@ -212,34 +234,77 @@ const onBookmarkChanged = async () => {
   })
 }
 
-watch(data, (val) => {
-  console.log('DATA STRUCTURE:', JSON.stringify(val, null, 2))
-})
-
 // comment
+type CommentDTO = {
+  id: number
+  body: string
+  created_at: string
+  user: { id: number; name: string }
+}
+
+const commentBodies = ref<Record<number, string>>({})
+const justPosted = ref<{ postId: number; comment: CommentDTO } | null>(null)
+
 const activeCommentPostId = ref<number | null>(null)
 const onToggleComment = (postId: number) => {
-  console.log('toggle comment for', postId)
-  activeCommentPostId.value =
-    activeCommentPostId.value === postId ? null : postId
+  activeCommentPostId.value = activeCommentPostId.value === postId ? null : postId
+  if (activeCommentPostId.value === postId && commentBodies.value[postId] == null) {
+    commentBodies.value[postId] = ''
+  }
 }
-const commentBody = ref('')
 
 const submitComment = async (postId: number) => {
-  const body = commentBody.value.trim()
+  const body = (commentBodies.value[postId] ?? '').trim()
   if (!body) return
 
   await preserveScroll(async () => {
-    await $apiFetch(`/posts/${postId}/comments`, {
+    const res = await $apiFetch<{ comment: CommentDTO }>(`/posts/${postId}/comments`, {
       method: 'POST',
       body: { body },
     })
 
-    commentBody.value = ''
+    // ✅ “どの投稿に紐づくか” を確実にする
+    justPosted.value = { postId, comment: res.comment }
+
+    // 入力クリア
+    commentBodies.value[postId] = ''
+
+    // ✅ フォームは閉じる（要望どおり）
     activeCommentPostId.value = null
+
     await refresh()
+
   })
 }
+
+//コメント内アクション
+const onClickCommentLike = (commentId: number) => {
+  console.log('like', commentId)
+}
+const onClickCommentReply = (commentId: number) => {
+  console.log('reply', commentId)
+}
+
+const onClickCommentRepost = (commentId: number) => {
+  console.log('repost', commentId)
+}
+
+const onClickCommentBookmark = (commentId: number) => {
+  console.log('bookmark', commentId)
+}
+
+const onCommentUpdated = (c: any) => {
+  if (justPosted.value && justPosted.value.comment.id === c.id) {
+    justPosted.value = { ...justPosted.value, comment: c }
+  }
+}
+
+const onCommentDeleted = () => {
+  justPosted.value = null
+  refresh()
+}
+
+
 
 // Repost modal state
 const repostModalOpen = ref(false)

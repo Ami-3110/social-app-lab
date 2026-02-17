@@ -108,6 +108,10 @@
         @repost="emit('open-repost', post)"
         @bookmark="ToggleBookmark"
       />
+      <!-- PostCard枠内に差し込み -->
+      <div class="mt-3">
+        <slot name="below-actions" />
+      </div>
   </div>
 </template>
 

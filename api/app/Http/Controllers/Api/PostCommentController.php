@@ -19,11 +19,17 @@ class PostCommentController extends Controller
       ->latest()
       ->paginate(20);
 
-    // paginatorの各要素に is_liked を付与
+    // paginatorの各要素に ActionBarの状態を付与
     $comments->setCollection(
       $comments->getCollection()->map(function ($comment) use ($userId) {
-        $comment->is_liked = $userId
+        // Comment-like
+          $comment->is_liked = $userId
           ? $comment->likes()->where('user_id', $userId)->exists()
+          : false;
+
+          // Comment-bookmark
+          $comment->is_bookmarked = $userId
+          ? $comment->bookmarks()->where('user_id', $userId)->exists()
           : false;
 
         return $comment;
@@ -44,18 +50,51 @@ class PostCommentController extends Controller
           'body' => $data['body'],
       ]);
 
-      return response()->json($comment->load('user:id,name'), 201);
+      $comment->load('user:id,name');
+      
+      return response()->json([
+        'comment' => [
+          'id' => $comment->id,
+          'body' => $comment->body,
+          'created_at' => $comment->created_at,
+          'user' => [
+            'id' => $comment->user->id,
+            'name' => $comment->user->name,
+          ],
+        ],
+      ], 201);
+  }
+
+  public function update(Request $request, Comment $comment)
+  {
+    // 認可（後述）
+    $this->authorize('update', $comment);
+
+    $data = $request->validate([
+      'body' => ['required', 'string', 'max:2000'],
+    ]);
+
+    $comment->update(['body' => $data['body']]);
+    $comment->load('user:id,name');
+
+    return response()->json([
+      'comment' => [
+        'id' => $comment->id,
+        'body' => $comment->body,
+        'created_at' => $comment->created_at,
+        'user' => [
+          'id' => $comment->user->id,
+          'name' => $comment->user->name,
+        ],
+      ],
+    ]);
   }
 
   public function destroy(Request $request, Comment $comment)
   {
-      // destroy only own comment
-      abort_if($comment->user_id !== $request->user()->id, 403);
+    $this->authorize('delete', $comment);
 
-      $comment->delete();
-
-      return response()->json([
-          'ok' => true,
-      ]);
+    $comment->delete();
+    return response()->noContent();
   }
 }

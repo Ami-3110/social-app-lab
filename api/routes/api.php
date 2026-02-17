@@ -7,11 +7,13 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\BookmarkController;
 use App\Http\Controllers\Api\PostLikeController;
 use App\Http\Controllers\Api\PostCommentController;
-use App\Http\Controllers\Api\CommentLikeController;
 use App\Http\Controllers\Api\PostRepostController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserFollowListController;
+use App\Http\Controllers\Api\CommentLikeController;
+use App\Http\Controllers\Api\CommentBookmarkController;
+
 
 // 動作確認用（開発中は残す）
 Route::get('/ping', function () {
@@ -46,30 +48,33 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/posts/{post}', [PostController::class, 'update']);
     // Post destroy
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+
     // Bookmark index
     Route::get('/bookmarks', [BookmarkController::class, 'index']);
     // Bookmark store
     Route::post('/posts/{post}/bookmark', [BookmarkController::class, 'store']);
     // Bookmark destroy
     Route::delete('/posts/{post}/bookmark', [BookmarkController::class, 'destroy']); 
+
     // Like store
     Route::post('/posts/{post}/like', [PostLikeController::class, 'store']);
     // Like destroy
     Route::delete('/posts/{post}/like', [PostLikeController::class, 'destroy']);
+
     // Comment index
     Route::get('/posts/{post}/comments', [PostCommentController::class, 'index']);
     // Comment store
     Route::post('/posts/{post}/comments', [PostCommentController::class, 'store']);
+    // Comment update
+    Route::patch('/comments/{comment}', [PostCommentController::class, 'update']);
     // Comment destroy
     Route::delete('/comments/{comment}', [PostCommentController::class, 'destroy']);
-    // comment like store
-    Route::post('/comments/{comment}/like', [CommentLikeController::class, 'store']);
-    // comment like destroy
-    Route::delete('/comments/{comment}/like', [CommentLikeController::class, 'destroy']);
+
     // repost store
     Route::post('/posts/{post}/repost', [PostRepostController::class, 'store']);
     // repost destroy
     Route::delete('/posts/{post}/repost', [PostRepostController::class, 'destroy']);
+
     // follow store
     Route::post('/users/{user}/follow', [FollowController::class, 'store']);
     // follow destroy
@@ -80,7 +85,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users/{user}/following', [UserFollowListController::class, 'following']);
     // follower
     Route::get('/users/{user}/followers', [UserFollowListController::class, 'followers']);
-    
+
+    // comment-like store
+    Route::post('/comments/{comment}/like', [CommentLikeController::class, 'store']);
+    // comment-like destroy
+    Route::delete('/comments/{comment}/like', [CommentLikeController::class, 'destroy']);
+
+    // comment-bookmark store
+    Route::post('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'store']);
+    // comment-bookmark destroy
+    Route::delete('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'destroy']);
 });
 
 // logout
