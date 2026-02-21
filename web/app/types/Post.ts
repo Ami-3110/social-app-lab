@@ -1,5 +1,7 @@
 // app/types/Post.ts
 import type { PublicUser } from '~/types/User'
+import type { Comment } from '~/types/Comment'
+
 export type Post = {
   id: number
   title: string
@@ -20,6 +22,9 @@ export type Post = {
   comments_count?: number
   reposts_count?: number
 
+  repost_of_comment_id?: number | null
+  repost_of_comment?: (Comment & { post?: Post | null }) | null
+  
   created_at: string
   updated_at: string
 }

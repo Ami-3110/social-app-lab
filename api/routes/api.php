@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserFollowListController;
 use App\Http\Controllers\Api\CommentLikeController;
 use App\Http\Controllers\Api\CommentBookmarkController;
+use App\Http\Controllers\Api\CommentRepostController;
 
 
 // 動作確認用（開発中は残す）
@@ -90,6 +91,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/comments/{comment}/like', [CommentLikeController::class, 'store']);
     // comment-like destroy
     Route::delete('/comments/{comment}/like', [CommentLikeController::class, 'destroy']);
+
+    // comment-repost store
+    Route::post('/comments/{comment}/repost', [CommentRepostController::class, 'store']);
+    // comment-repost destroy
+    Route::delete('/comments/{comment}/repost', [CommentRepostController::class, 'destroy']);
 
     // comment-bookmark store
     Route::post('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'store']);

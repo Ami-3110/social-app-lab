@@ -1,6 +1,6 @@
 <!-- app/components/PostCard.vue -->
 <template>
-  <div class="p-5 rounded-xl ui-border ui-card ui-text ui-card-hover shadow-sm hover:shadow-md transition">
+  <div class="px-5 py-3 rounded-xl ui-border ui-card ui-text ui-card-hover shadow-sm hover:shadow-md transition">
     <!-- カード全体クリックで詳細へ -->
     <div @click="navigateTo(`/posts/${post.id}`)" class="cursor-pointer">
       <!-- 上段：投稿者情報 -->
@@ -51,38 +51,44 @@
 
       <!-- title -->
       <div class="mt-3">
-        <span class="text-lg font-bold">{{ post.title }}</span>
+        <div v-if="!post.repost_of_comment_id" class="mt-3">
+          <span class="text-lg font-bold">{{ post.title }}</span>
+        </div>
       </div>
-
       <!-- body -->
       <p class="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed ui-text">
-        <!-- Itself  -->
-        <div v-if="post.quote_body?.trim()" class="mt-2 whitespace-pre-wrap text-sm">
+        <!-- Itself / Quote / Comment-repost / Normal -->
+        <div v-if="post.repost_of_comment_id && post.repost_of_comment" class="mt-2">
+          <div class="text-xs ui-muted mb-2">
+            {{ post.user?.name ?? 'Unknown' }} reposted a comment
+          </div>
+
+          <NuxtLink
+            :to="`/posts/${post.repost_of_comment.post_id}`"
+            class="block rounded-xl ui-border ui-bg p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
+            @click.stop
+          >
+            <div class="ui-muted text-xs mb-1">
+              {{ post.repost_of_comment.user?.name ?? 'Unknown' }}
+            </div>
+
+            <div class="whitespace-pere-wrap text-sm ui-text">
+              {{ post.repost_of_comment.body }}
+            </div>
+
+            <div v-if="post.repost_of_comment.post?.title" class="mt-2 text-xs ui-muted">
+              on post: {{ post.repost_of_comment.post.title }}
+            </div>
+          </NuxtLink>
+        </div>
+
+        <div v-else-if="post.quote_body?.trim()" class="mt-2 whitespace-pre-wrap text-sm">
           {{ post.quote_body }}
         </div>
 
         <div v-else-if="!post.original_post" class="mt-2 whitespace-pre-wrap text-sm">
           {{ post.body }}
         </div>
-
-        <!-- Original post -->
-        <NuxtLink
-          v-if="post.original_post"
-          :to="`/posts/${post.original_post.id}`"
-          class="mt-3 block rounded-xl ui-border ui-bg p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
-        >
-          <div class="ui-muted text-xs mb-2">
-            {{ post.original_post.user?.name ?? 'Unknown' }}
-          </div>
-
-          <div class="font-semibold text-sm leading-snug">
-            {{ post.original_post.title }}
-          </div>
-
-          <div class="mt-1 whitespace-pre-wrap text-sm ui-muted">
-            {{ post.original_post.body }}
-          </div>
-        </NuxtLink>
       </p>
 
       <!-- topic-->
@@ -169,4 +175,7 @@ const ToggleBookmark = async () => {
     isBookmarked: (props.post.is_bookmarked ?? 0) > 0,
   })
 }
+
+const isCommentRepost = computed(() => !!props.post.repost_of_comment_id)
+
 </script>

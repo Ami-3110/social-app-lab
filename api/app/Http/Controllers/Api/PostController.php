@@ -26,7 +26,9 @@ class PostController extends Controller
         ->latest()
         ->with([
           'user:id,name',
-          'originalPost.user:id,name'
+          'originalPost.user:id,name',
+          'repostOfComment.user:id,name',
+          'repostOfComment.post.user:id,name',
         ])
         ->withCount([
           'likes',

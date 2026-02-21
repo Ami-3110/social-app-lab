@@ -122,41 +122,50 @@
             @bookmark="onClickBookmark"
           />
         </div>
-
-          <!-- Comment form -->
-          <form class="mt-4 flex gap-2" @submit.prevent="onSubmit">
-            <input
-              ref="commentInputRef"
-              v-model="body"
-              type="text"
-              class="flex-1 rounded ui-border ui-bg px-3 py-2 text-sm"
-              placeholder="Write a comment..."
-            />
-            <button
-              type="submit"
-              class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              Send
-            </button>
-          </form>
-
-          <!-- Comment card -->
-          <h2 class="mt-6 text-sm font-semibold ui-text">Comments</h2>
-          <CommentCard
-            v-for="c in comments"
-            :key="c.id"
-            :comment="c"
-            :me-id="myUserId ?? null"
-            @like="onClickCommentLike"
-            @comment="onClickCommentReply"
-            @repost="onClickCommentRepost"
-            @bookmark="onClickCommentBookmark"
-            @updated="onCommentUpdated"
-            @deleted="onCommentDeleted"
-          />
-
-        </div>
       </div>
+        <!-- Comment form -->
+        <form class="mt-4 flex gap-2" @submit.prevent="onSubmit">
+          <input
+            ref="commentInputRef"
+            v-model="body"
+            type="text"
+            class="flex-1 rounded ui-border ui-bg px-3 py-2 text-sm"
+            placeholder="Write a comment..."
+          />
+          <button
+            type="submit"
+            class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            Send
+          </button>
+        </form>
+
+        <div v-if="replyTo" class="mt-2 text-xs ui-text opacity-80">
+          Replying to {{ replyTo.user.name }}
+          <button
+          type="button"
+          class="ml-2 underline"
+          @click="replyToCommentId = null"
+          >
+          Cancel
+          </button>
+        </div>
+
+        <!-- Comment card -->
+        <h2 class="mt-6 text-sm font-semibold ui-text">Comments</h2>
+        <CommentCard
+          v-for="c in comments"
+          :key="c.id"
+          :comment="c"
+          :me-id="myUserId ?? null"
+          @like="onClickCommentLike"
+          @comment="onClickCommentReply"
+          @repost="onClickCommentRepost"
+          @bookmark="onClickCommentBookmark"
+          @updated="onCommentUpdated"
+          @deleted="onDeleteComment"
+        />
+
       <!-- Repost Modal -->
       <div
         v-if="repostModalOpen"
@@ -206,9 +215,9 @@
           </div>
         </div>
       </div>
+    </div>
   </main>
 </template>
-
 
 <script setup lang="ts">
 definePageMeta({
@@ -332,6 +341,19 @@ const { data: commentsRes, refresh: refreshComments } = useAsyncData<Paginated<C
 
 const comments = computed(() => commentsRes.value?.data ?? [])
 
+// Comment-reply
+const replyToCommentId = ref<number | null>(null)
+
+const replyTo = computed(() => {
+  if (!replyToCommentId.value) return null
+  return comments.value.find(c => c.id === replyToCommentId.value) ?? null
+})
+
+const onClickCommentReply = (commentId: number) => {
+  replyToCommentId.value = commentId
+  nextTick(() => commentInputRef.value?.focus())
+}
+
 // Comment Submit
 const onSubmit = async () => {
   if (!post.value) return
@@ -339,9 +361,14 @@ const onSubmit = async () => {
   if (!text) return
 
   await $apiFetch(`/posts/${post.value.id}/comments`, {
-    method: 'POST',
-    body: { body: text },
-  })
+  method: 'POST',
+  body: {
+    body: text,
+    parent_id: replyToCommentId.value,
+  },
+})
+
+replyToCommentId.value = null
 
   body.value = ''
   await refreshComments()
@@ -350,27 +377,21 @@ const onSubmit = async () => {
 
 const commentInputRef = ref<HTMLInputElement | null>(null)
 
-// Comment Delete
+//?
 const {user} = useAuthState()
 const myUserId = computed(() => user.value?.id)
 
-const isMyComment = (c: Comment) => {
-  return Number(c.user_id) === Number(myUserId.value)
-}
+//const isMyComment = (c: Comment) => {
+//  if (!myUserId.value) return false
+//  return c.user.id === myUserId.value
+//}
 
 const deletingCommentId = ref<number | null>(null)
 
+// Comment Delete
 const onDeleteComment = async (commentId: number) => {
-  if (!confirm('Delete this comment?')) return
-
-  deletingCommentId.value = commentId
-  try {
-    await $apiFetch(`/comments/${commentId}`, { method: 'DELETE' })
     await refreshComments()
     await refresh()
-  } finally {
-    deletingCommentId.value = null
-  }
 }
 
 // Comment like
@@ -389,6 +410,16 @@ const onClickCommentLike = async (commentId: number) => {
 
 
 // Comment repost
+const onClickCommentRepost = async (commentId: number) => {
+  const c = comments.value.find(x => x.id === commentId)
+  if (!c) return
+
+  await $apiFetch(`/comments/${commentId}/repost`, {
+    method: c.is_reposted ? 'DELETE' : 'POST',
+  })
+
+  await refreshComments()
+}
 
 // Comment bookmark
 const onClickCommentBookmark = async (commentId: number) => {
@@ -401,6 +432,7 @@ const onClickCommentBookmark = async (commentId: number) => {
 
   await refreshComments()
 }
+
 
 
 // Focus comment input if ?focus=comment
@@ -424,20 +456,10 @@ const focusCommentInput = async () => {
 }
 
 //未実装のやつ
-const onClickCommentReply = (commentId: number) => {
-  alert('Reply is not implemented yet.')
-}
-
-const onClickCommentRepost = (commentId: number) => {
-  alert('Comment repost is not implemented yet.')
-}
 
 const onCommentUpdated = async () => {
   await refreshComments()
 }
 
-const onCommentDeleted = async () => {
-  await refreshComments()
-}
 
 </script>

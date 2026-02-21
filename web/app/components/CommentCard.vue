@@ -2,10 +2,16 @@
 <template>
   <div class="border-b dark:border-zinc-700 py-4">
     <!-- header row -->
+     <div v-if="comment.parent" class="mb-2 text-xs ui-text opacity-70">
+  Replying to {{ comment.parent.user.name }}: {{ comment.parent.body }}
+</div>
+
     <div class="flex items-start justify-between gap-2">
       <div class="text-sm min-w-0">
-        <div class="font-semibold truncate">{{ comment.user?.name ?? 'Unknown' }}</div>
-      </div>
+        <div class="font-semibold truncate">
+          {{ comment.user?.name ?? 'Unknown' }}
+        </div>
+      </div>    
 
       <!-- ✅ 三点メニュー（自分のコメントだけ） -->
       <div v-if="canManage" class="relative">
@@ -19,14 +25,14 @@
             type="button"
             @click="startEdit"
           >
-            Edit
+            ✏️ Edit
           </button>
           <button
             class="block w-full text-left px-3 py-2 text-sm hover:opacity-90"
             type="button"
             @click="doDelete"
           >
-            Delete
+            🗑 Delete
           </button>
         </div>
       </div>
@@ -54,7 +60,6 @@
           </button>
         </div>
       </div>
-      
       <div v-else class="whitespace-pre-wrap">
         {{ comment.body }}
       </div>
@@ -64,8 +69,8 @@
       <ActionBar
         :is-liked="comment.is_liked ?? false"
         :likes-count="comment.likes_count ?? 0"
-        :comments-count="0"
-        :reposts-count="0"
+        :comments-count="comment.replies_count ?? 0"
+        :reposts-count="comment.reposts_count ?? 0"
         :is-bookmarked="comment.is_bookmarked ?? false"
         :repost-disabled="false"
         @like="emit('like', comment.id)"
@@ -82,9 +87,9 @@ import type { Comment } from '~/types/Comment'
 
 const props = defineProps<{
   comment: Comment
-  showMenu?: boolean
   meId?: number | null
 }>()
+
 
 const emit = defineEmits<{
   (e: 'like', commentId: number): void
@@ -98,8 +103,8 @@ const emit = defineEmits<{
 const { $apiFetch } = useNuxtApp()
 
 const canManage = computed(() => {
-  if (props.showMenu != null) return !!props.showMenu
-  return props.meId != null && props.comment.user?.id === props.meId
+  if (props.meId == null) return false
+  return Number(props.comment.user?.id) === Number(props.meId)
 })
 
 const menuOpen = ref(false)

@@ -9,7 +9,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Comment extends Model
 {
-  protected $fillable = ['user_id', 'post_id', 'body'];
+  protected $fillable = [
+    'user_id',
+    'post_id',
+    'body',
+    'parent_id',
+    'root_id',
+    ];
 
   public function user()
   {
@@ -37,4 +43,23 @@ class Comment extends Model
     return $this->hasMany(CommentBookmark::class);
   }
 
+  public function parent()
+  {
+    return $this->belongsTo(self::class, 'parent_id');
+  }
+
+  public function root()
+  {
+    return $this->belongsTo(self::class, 'root_id');
+  }
+
+  public function replies()
+  {
+    return $this->hasMany(self::class, 'parent_id');
+  }
+
+  public function reposts()
+  {
+    return $this->hasMany(CommentRepost::class);
+  }
 }

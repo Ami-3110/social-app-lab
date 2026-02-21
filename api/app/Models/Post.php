@@ -19,6 +19,7 @@ class Post extends Model
         'topic',
         'repost_of_post_id',
         'quote_body',
+        'repost_of_comment_id',
     ];
 
     public function user()
@@ -55,4 +56,10 @@ class Post extends Model
     {
       return $this->hasMany(Post::class, 'repost_of_post_id');
     }
+
+  public function repostOfComment()
+  {
+    return $this->belongsTo(Comment::class, 'repost_of_comment_id');
+  }
+
 }

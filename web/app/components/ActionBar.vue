@@ -1,10 +1,10 @@
 <!-- app/components/ActionBar.vue -->
 <template>
-  <div class="flex items-center justify-between ui-muted text-sm border-t dark:border-zinc-700 pt-3 mt-3">
+  <div class="flex items-center justify-between ui-muted text-sm dark:pt-3 mt-3">
     <!-- Like -->
     <button
       type="button"
-      class="inline-flex items-center gap-1 rounded px-2 py-1 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+      class="inline-flex items-center gap-1 rounded px-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
       @click="on('like', $event)"
     >
       <span v-if="liked">❤️</span>
