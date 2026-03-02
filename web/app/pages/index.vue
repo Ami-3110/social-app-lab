@@ -43,7 +43,7 @@
               <PostCard
                 :post="post"
                 :show-menu="true"
-                @toggle-like="onToggleLike"
+                @toggle-like="posts.toggleLike"
                 @toggle-comment="onToggleComment"
                 @bookmark-changed="onBookmarkChanged"
                 @delete="onDelete"
@@ -52,16 +52,10 @@
                 <template #below-actions>
                   <!-- posted comment -->
                   <CommentCard
-                    v-if="justPosted?.postId === post.id"
-                    :comment="justPosted.comment"
+                    v-if="justPostedComment?.postId === post.id"
+                    :comment="justPostedComment.comment"
                     :me-id="myUserId"
                     variant="compact"
-                    @like="onClickCommentLike"
-                    @comment="onClickCommentReply"
-                    @repost="onClickCommentRepost"
-                    @bookmark="onClickCommentBookmark"
-                    @updated="onCommentUpdated"
-                    @deleted="onCommentDeleted"
                   />
                   <!-- comment form -->
                   <div v-if="activeCommentPostId === post.id" class="mt-3">
@@ -196,17 +190,10 @@ const myUserId = computed(() => user.value?.id ?? null)
 type TimelineTab = 'All' | 'Following' | 'For you' | 'Topic'
 const activeTab = ref<TimelineTab>('All')
 
-const {
-  data,
-  pending,
-  topic,
-  go,
-  refresh,
-  onDelete,
-  deleteError,
-} = usePosts({
+const posts = usePosts({
   tab: () => activeTab.value,
 })
+const { data, pending, topic, go, refresh, onDelete, deleteError } = posts
 
 const { $apiFetch } = useNuxtApp()
 
@@ -218,15 +205,6 @@ const preserveScroll = async (fn: () => Promise<void>) => {
   window.scrollTo({ top: y })
 }
 
-const onToggleLike = async (postId: number, nextLiked: boolean) => {
-  await preserveScroll(async () => {
-    await $apiFetch(`/posts/${postId}/like`, {
-      method: nextLiked ? 'POST' : 'DELETE',
-    })
-    await refresh()
-  })
-}
-
 // bookmark
 const onBookmarkChanged = async () => {
   await preserveScroll(async () => {
@@ -235,17 +213,11 @@ const onBookmarkChanged = async () => {
 }
 
 // comment
-type CommentDTO = {
-  id: number
-  body: string
-  created_at: string
-  user: { id: number; name: string }
-}
-
 const commentBodies = ref<Record<number, string>>({})
-const justPosted = ref<{ postId: number; comment: CommentDTO } | null>(null)
 
 const activeCommentPostId = ref<number | null>(null)
+
+  //comment form open/close
 const onToggleComment = (postId: number) => {
   activeCommentPostId.value = activeCommentPostId.value === postId ? null : postId
   if (activeCommentPostId.value === postId && commentBodies.value[postId] == null) {
@@ -253,58 +225,20 @@ const onToggleComment = (postId: number) => {
   }
 }
 
+  // Optimistic UI for newly posted comment
+const justPostedComment = ref<{ postId: number; comment: Comment } | null>(null)
+
 const submitComment = async (postId: number) => {
   const body = (commentBodies.value[postId] ?? '').trim()
   if (!body) return
 
   await preserveScroll(async () => {
-    const res = await $apiFetch<{ comment: CommentDTO }>(`/posts/${postId}/comments`, {
-      method: 'POST',
-      body: { body },
-    })
-
-    // ✅ “どの投稿に紐づくか” を確実にする
-    justPosted.value = { postId, comment: res.comment }
-
-    // 入力クリア
+    const comment = await posts.submitComment(postId, body)
+    justPostedComment.value = { postId, comment }
     commentBodies.value[postId] = ''
-
-    // ✅ フォームは閉じる（要望どおり）
     activeCommentPostId.value = null
-
-    await refresh()
-
   })
 }
-
-//コメント内アクション
-const onClickCommentLike = (commentId: number) => {
-  console.log('like', commentId)
-}
-const onClickCommentReply = (commentId: number) => {
-  console.log('reply', commentId)
-}
-
-const onClickCommentRepost = (commentId: number) => {
-  console.log('repost', commentId)
-}
-
-const onClickCommentBookmark = (commentId: number) => {
-  console.log('bookmark', commentId)
-}
-
-const onCommentUpdated = (c: any) => {
-  if (justPosted.value && justPosted.value.comment.id === c.id) {
-    justPosted.value = { ...justPosted.value, comment: c }
-  }
-}
-
-const onCommentDeleted = () => {
-  justPosted.value = null
-  refresh()
-}
-
-
 
 // Repost modal state
 const repostModalOpen = ref(false)
@@ -323,6 +257,7 @@ const closeRepostModal = () => {
   quoteBody.value = ''
 }
 
+// Repost Quote
 const submitRepost = async () => {
   const target = repostTarget.value
   if (!target) return
@@ -330,15 +265,14 @@ const submitRepost = async () => {
   const q = quoteBody.value.trim()
 
   await preserveScroll(async () => {
-    await $apiFetch(`/posts/${target.id}/repost`, {
-      method: 'POST',
-      body: { quote_body: q === '' ? null : q },
-    })
-    await refresh()
+    await posts.submitRepost(target.id, q === '' ? null : q) // ← usePosts経由
   })
 
   closeRepostModal()
 }
+
+
+
 
 import { onBeforeUnmount, onMounted } from 'vue'
 
@@ -348,7 +282,5 @@ const onKeydown = (e: KeyboardEvent) => {
 
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
-
-
 
 </script>

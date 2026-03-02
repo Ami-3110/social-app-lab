@@ -128,18 +128,8 @@ class PostCommentController extends Controller
     $comment->load('user:id,name');
 
     return response()->json([
-      'comment' => [
-        'id' => $comment->id,
-        'body' => $comment->body,
-        'created_at' => $comment->created_at,
-        'user' => [
-          'id' => $comment->user->id,
-          'name' => $comment->user->name,
-        ],
-      ],
+      'data' => $this->commentResource($comment, $request->user()->id),
     ]);
-
-
   }
 
   public function destroy(Request $request, Comment $comment)
@@ -158,6 +148,8 @@ class PostCommentController extends Controller
       'body' => $comment->body,
       'parent_id' => $comment->parent_id,
       'root_id' => $comment->root_id,
+      'created_at' => $comment->created_at?->toISOString(),
+      'updated_at' => $comment->updated_at?->toISOString(),
 
       'user' => [
         'id' => $comment->user->id,
@@ -175,7 +167,7 @@ class PostCommentController extends Controller
         ],
       ] : null,
 
-      // ここは今の実装に合わせて（例）
+
       'likes_count' => $comment->likes_count ?? 0,
       'replies_count' => $comment->replies_count ?? 0,
       'reposts_count' => $comment->reposts_count ?? 0,
@@ -184,4 +176,6 @@ class PostCommentController extends Controller
       'is_bookmarked' => (bool)($comment->is_bookmarked ?? false),
     ];
   }
+
+  
 }

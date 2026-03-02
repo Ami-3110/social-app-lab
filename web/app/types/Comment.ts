@@ -7,6 +7,9 @@ export type Comment = {
   user: PublicUser
   body: string
 
+  created_at: string
+  updated_at: string
+
   parent_id?: number | null
   root_id?: number | null
   parent?: {
@@ -24,3 +27,5 @@ export type Comment = {
   is_bookmarked?: boolean
   is_reposted?: boolean
 }
+
+

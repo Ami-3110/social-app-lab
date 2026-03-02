@@ -144,7 +144,7 @@ const onDelete = () => {
 // Emit
 const emit = defineEmits<{
   (e: 'delete', postId: number): void
-  (e: 'toggle-like', postId: number, nextLiked: boolean): void
+  (e: 'togglelike', postId: number, nextLiked: boolean): void
   (e: 'bookmark-changed', payload: { postId: number; isBookmarked: boolean }): void
   (e: 'open-repost', post: Post): void
   (e: 'toggle-comment', postId: number): void
@@ -153,7 +153,7 @@ const emit = defineEmits<{
 // Like
 const onClickLike = () => {
   const nextLiked = Number(props.post.is_liked ?? 0) !== 1
-  emit('toggle-like', props.post.id, nextLiked)
+  emit('togglelike', props.post.id, nextLiked)
 }
 
 // Repost

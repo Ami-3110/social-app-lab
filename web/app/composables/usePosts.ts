@@ -1,5 +1,6 @@
 // composables/usePosts.ts
 import type { Post } from '~/types/Post'
+import type { Comment } from '~/types/Comment'
 
 type PostsResponse = {
   current_page: number
@@ -126,27 +127,41 @@ export const usePosts = (options: UsePostsOptions = {}) => {
     }
   }
 
-  // bookmark  
-  const toggleBookmark = async (post: Post) => {
-    const isOn = (post.is_bookmarked ?? 0) > 0
+    // ================================
+    // Action
+  // ================================
+  
+  // Like
+  const toggleLike = async (post: Post) => {
+    const isOn = (post.is_liked ?? 0) > 0
 
-    // 楽観更新（先に見た目を変える）※失敗したら戻す
-    post.is_bookmarked = isOn ? 0 : 1
+    // 楽観更新
+    post.is_liked = isOn ? 0 : 1
+    post.likes_count = Math.max(0, (post.likes_count ?? 0) + (isOn ? -1 : 1))
 
     try {
-        if (isOn) {
-          await $apiFetch(`/posts/${post.id}/bookmark`, { method: 'DELETE' })
-        } else {
-          await $apiFetch(`/posts/${post.id}/bookmark`, { method: 'POST' })
-        }
-        await refresh()
-      } catch (e) {
-        // 失敗したら戻す
-        post.is_bookmarked = isOn ? 1 : 0
-        throw e
-      }
+      await $apiFetch(`/posts/${post.id}/like`, {
+        method: isOn ? 'DELETE' : 'POST',
+      })
+      await refresh()
+    } catch (e) {
+      // 失敗したら戻す
+      post.is_liked = isOn ? 1 : 0
+      post.likes_count = Math.max(0, (post.likes_count ?? 0) + (isOn ? 1 : -1))
+      throw e
+    }
   }
-  
+
+  // comment
+  const submitComment = async (postId: number, body: string) => {
+    const res = await $apiFetch<{ data: Comment }>(`/posts/${postId}/comments`, {
+      method: 'POST',
+      body: { body },
+    })
+    await refresh()
+    return res.data
+  }
+
   // repost
   const toggleRepost = async (post: Post) => {
     const isOn = (post.is_reposted ?? 0) > 0
@@ -167,24 +182,56 @@ export const usePosts = (options: UsePostsOptions = {}) => {
     }
   }
 
+  // quote
+  const submitRepost = async (postId: number, quoteBody: string | null) => {
+    await $apiFetch(`/posts/${postId}/repost`, {
+      method: 'POST',
+      body: { quote_body: quoteBody },
+    })
+    await refresh()
+  }
+
+  // bookmark  
+  const toggleBookmark = async (post: Post) => {
+    const isOn = (post.is_bookmarked ?? 0) > 0
+
+    // 楽観更新（先に見た目を変える）※失敗したら戻す
+    post.is_bookmarked = isOn ? 0 : 1
+
+    try {
+        if (isOn) {
+          await $apiFetch(`/posts/${post.id}/bookmark`, { method: 'DELETE' })
+        } else {
+          await $apiFetch(`/posts/${post.id}/bookmark`, { method: 'POST' })
+        }
+        await refresh()
+      } catch (e) {
+        // 失敗したら戻す
+        post.is_bookmarked = isOn ? 1 : 0
+        throw e
+      }
+  }
 
   return {
     data,
     pending,
     error,
+
     page,
     topic,
 
     go,
     refresh,
 
-    onDelete,
-
     create,
     update,
+    onDelete,
 
-    toggleBookmark,
+    toggleLike,
+    submitComment,
     toggleRepost,
+    submitRepost,
+    toggleBookmark,
 
     deletingId,
     deleteError,

@@ -233,6 +233,7 @@ import { useRoute } from 'vue-router'
 import { useAuthState } from '~/composables/useAuth'
 import { useFollow } from '~/composables/useFollow'
 import type { Post } from '~/types/Post'
+import type { Comment } from '~/types/Comment'
 
 type Profile = {
   id: number
@@ -332,15 +333,9 @@ const onToggleLike = async (postId: number, nextLiked: boolean) => {
 }
 
 // comment
-type CommentDTO = {
-  id: number
-  body: string
-  created_at: string
-  user: { id: number; name: string }
-}
 
 const commentBodies = ref<Record<number, string>>({})
-const justPosted = ref<{ postId: number; comment: CommentDTO } | null>(null)
+const justPosted = ref<{ postId: number; comment: Comment } | null>(null)
 
 const activeCommentPostId = ref<number | null>(null)
 const onToggleComment = (postId: number) => {
@@ -355,13 +350,13 @@ const submitComment = async (postId: number) => {
   if (!body) return
 
   await preserveScroll(async () => {
-    const res = await $apiFetch<{ comment: CommentDTO }>(`/posts/${postId}/comments`, {
+    const res = await $apiFetch<{ data: Comment }>(`/posts/${postId}/comments`, {
       method: 'POST',
       body: { body },
     })
 
     // ✅ “どの投稿に紐づくか” を確実にする
-    justPosted.value = { postId, comment: res.comment }
+    justPosted.value = { postId, comment: res.data }
 
     // 入力クリア
     commentBodies.value[postId] = ''

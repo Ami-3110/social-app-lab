@@ -129,11 +129,11 @@ const saveEdit = async () => {
 
   busy.value = true
   try {
-    const res = await $apiFetch<{ comment: Comment }>(`/comments/${props.comment.id}`, {
+    const res = await $apiFetch<{ data: Comment }>(`/comments/${props.comment.id}`, {
       method: 'PATCH',
       body: { body },
     })
-    emit('updated', res.comment)
+    emit('updated', res.data)
     editing.value = false
   } finally {
     busy.value = false
