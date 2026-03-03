@@ -1,6 +1,6 @@
 <!-- app/components/ActionBar.vue -->
 <template>
-  <div class="flex items-center justify-between ui-muted text-sm dark:pt-3 mt-3">
+  <div class="flex items-center justify-between ui-muted text-sm dark:pt-1 mt-1">
     <!-- Like -->
     <button
       type="button"

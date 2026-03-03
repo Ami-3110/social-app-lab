@@ -4,7 +4,7 @@
   <div class="min-h-screen ui-bg">
     <div class="mx-auto max-w-5xl grid grid-cols-[240px_1fr] gap-6">
       <!-- Left Sidebar -->
-      <aside class="sticky top-0 h-screen p-5 ui-card ui-border ui-text border-r">
+      <aside class="sticky top-0 h-screen p-5 ui-card ui-border-all ui-text border-r">
         <div class="mb-6">
           <NuxtLink to="/" class="text-xl font-bold tracking-tight ui-text">
             tw-like
@@ -53,7 +53,7 @@
               <!-- dropdown (opens to upper-right) -->
               <div
                 v-if="menuOpen"
-                class="absolute bottom-full left-0 mb-2 w-56 rounded-xl ui-menu ui-border shadow-lg overflow-hidden"
+                class="absolute bottom-full left-0 mb-2 w-56 rounded-xl ui-menu ui-border-all shadow-lg overflow-hidden"
                 role="menu"
               >
                 <button

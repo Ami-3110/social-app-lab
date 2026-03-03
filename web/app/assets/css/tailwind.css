@@ -27,9 +27,12 @@
 
   /* border */
   .ui-border {
+    @apply border-zinc-700 dark:border-zinc-700;
+  }
+  .ui-border-all {
     @apply border border-zinc-200 dark:border-zinc-600;
   }
-
+  
   /* menu */
   .ui-menu {
     @apply bg-white dark:bg-zinc-800;

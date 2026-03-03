@@ -1,9 +1,9 @@
 <!-- components/UserCard.vue -->
 <template>
-  <div class="p-4 rounded-xl ui-border ui-bg flex items-center justify-between gap-4">
+  <div class="p-4 rounded-xl ui-border-all ui-bg flex items-center justify-between gap-4">
     <NuxtLink :to="`/users/${user.id}`" class="flex items-center gap-3 min-w-0">
       <div
-        class="h-10 w-10 rounded-full ui-border flex items-center justify-center font-bold shrink-0"
+        class="h-10 w-10 rounded-full ui-border-all flex items-center justify-center font-bold shrink-0"
         aria-hidden="true"
       >
         {{ (user.name ?? 'U').slice(0, 1).toUpperCase() }}
@@ -20,7 +20,7 @@
     <button
       v-if="!isMe"
       type="button"
-      class="px-3 py-1 text-sm rounded-md ui-border ui-bg hover:opacity-90 shrink-0"
+      class="px-3 py-1 text-sm rounded-md ui-border-all ui-bg hover:opacity-90 shrink-0"
       :disabled="busy"
       @click="onToggleFollow"
     >

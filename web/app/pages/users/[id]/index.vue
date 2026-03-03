@@ -8,7 +8,7 @@
     <section v-else-if="profile" class="space-y-4">
       <!-- Header -->
       <header class="flex items-center gap-4">
-        <div class="h-12 w-12 rounded-full ui-border flex items-center justify-center text-lg font-bold">
+        <div class="h-12 w-12 rounded-full ui-border-all flex items-center justify-center text-lg font-bold">
           {{ (profile.name ?? 'U').slice(0,1).toUpperCase() }}
         </div>
 
@@ -19,7 +19,7 @@
       </header>
 
       <!-- Bio（今は仮。後でAPIにbio追加） -->
-      <section class="rounded-xl ui-border ui-bg p-4 text-sm whitespace-pre-wrap">
+      <section class="rounded-xl ui-border-all ui-bg p-4 text-sm whitespace-pre-wrap">
         <p v-if="profile.bio?.trim()">{{ profile.bio }}</p>
         <p v-else class="ui-muted">Add a bio to your profile.</p>
       </section>
@@ -30,7 +30,7 @@
         <button
           v-if="isMe"
           type="button"
-          class="flex-1 rounded-full px-4 py-2 text-sm ui-border ui-bg hover:opacity-90"
+          class="flex-1 rounded-full px-4 py-2 text-sm ui-border-all ui-bg hover:opacity-90"
           @click="onEditProfile"
         >
           Edit profile
@@ -40,7 +40,7 @@
         <button
           v-else
           type="button"
-          class="flex-1 rounded-full px-4 py-2 text-sm ui-border ui-bg hover:opacity-90"
+          class="flex-1 rounded-full px-4 py-2 text-sm ui-border-all ui-bg hover:opacity-90"
           :disabled="busy"
           @click="toggleFollow"
         >
@@ -49,7 +49,7 @@
 
         <button
           type="button"
-          class="flex-1 rounded-full px-4 py-2 text-sm ui-border ui-bg hover:opacity-90"
+          class="flex-1 rounded-full px-4 py-2 text-sm ui-border-all ui-bg hover:opacity-90"
           @click="onOpenFollowing"
         >
           {{ profile.following_count ?? 0 }} Following
@@ -57,7 +57,7 @@
 
         <button
           type="button"
-          class="flex-1 rounded-full px-4 py-2 text-sm ui-border ui-bg hover:opacity-90"
+          class="flex-1 rounded-full px-4 py-2 text-sm ui-border-all ui-bg hover:opacity-90"
           @click="onOpenFollowers"
         >
           {{ profile.followers_count ?? 0 }} Followers
@@ -71,7 +71,7 @@
           v-for="t in tabs"
           :key="t"
           type="button"
-          class="rounded-md px-3 py-2 text-sm ui-border"
+          class="rounded-md px-3 py-2 text-sm ui-border-all"
           :class="activeTab === t
             ? 'font-semibold bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100'
             : 'ui-muted hover:opacity-90'"
@@ -113,10 +113,10 @@
                       <!-- ✅ posted comment（枠線＋アイコン＋名前） -->
                       <div
                         v-if="justPosted?.postId === post.id"
-                        class="rounded ui-border ui-bg px-3 py-2 text-sm"
+                        class="rounded ui-border-all ui-bg px-3 py-2 text-sm"
                       >
                         <div class="flex items-center gap-2 mb-1">
-                          <div class="h-6 w-6 rounded-full ui-border flex items-center justify-center text-xs font-semibold">
+                          <div class="h-6 w-6 rounded-full ui-border-all flex items-center justify-center text-xs font-semibold">
                             {{ (justPosted?.comment.user.name ?? 'U').slice(0,1).toUpperCase() }}
                           </div>
                           <div class="font-medium ui-text">
@@ -137,12 +137,12 @@
                         <textarea
                           v-model="commentBodies[post.id]"
                           rows="2"
-                          class="w-full rounded ui-border ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
+                          class="w-full rounded ui-border-all ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
                           placeholder="Write a comment..."
                         />
                         <div class="flex justify-end mt-2">
                           <button
-                            class="px-3 py-1 text-sm ui-border ui-text rounded"
+                            class="px-3 py-1 text-sm ui-border-all ui-text rounded"
                             @click="submitComment(post.id)"
                           >
                             Post
@@ -171,7 +171,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
         @click.self="closeRepostModal"
       >
-        <div class="w-full max-w-lg rounded-2xl ui-bg ui-text ui-border p-4 shadow-xl">
+        <div class="w-full max-w-lg rounded-2xl ui-bg ui-text ui-border-all p-4 shadow-xl">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold">
               Repost
@@ -182,12 +182,12 @@
           <textarea
             v-model="quoteBody"
             rows="4"
-            class="w-full rounded ui-border ui-bg px-3 py-2 text-sm"
+            class="w-full rounded ui-border-all ui-bg px-3 py-2 text-sm"
             placeholder="Add a comment (optional)..."
           />
 
           <!-- 元投稿プレビュー（任意だけど便利） -->
-          <div v-if="repostTarget" class="mt-3 rounded-xl ui-border ui-bg p-3">
+          <div v-if="repostTarget" class="mt-3 rounded-xl ui-border-all ui-bg p-3">
             <div class="ui-muted text-xs mb-2">
               {{ repostTarget.user?.name ?? 'Unknown' }}
             </div>
@@ -202,7 +202,7 @@
           <div class="mt-4 flex items-center justify-end gap-2">
             <button
               type="button"
-              class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
+              class="rounded px-3 py-2 text-sm -all hover:bg-gray-50 dark:hover:bg-gray-800"
               @click="closeRepostModal"
             >
               Cancel
@@ -210,7 +210,7 @@
 
             <button
               type="button"
-              class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
+              class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
               @click="submitRepost"
             >
               {{ quoteBody.trim() ? 'Quote' : 'Repost' }}

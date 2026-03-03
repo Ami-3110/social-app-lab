@@ -1,6 +1,6 @@
 <!-- app/components/PostCard.vue -->
 <template>
-  <div class="px-5 py-3 rounded-xl ui-border ui-card ui-text ui-card-hover shadow-sm hover:shadow-md transition">
+  <div class="px-5 py-3 rounded-xl ui-border-all ui-card ui-text ui-card-hover shadow-sm hover:shadow-md transition">
     <!-- カード全体クリックで詳細へ -->
     <div @click="navigateTo(`/posts/${post.id}`)" class="cursor-pointer">
       <!-- 上段：投稿者情報 -->
@@ -29,7 +29,7 @@
 
           <div
             v-if="isMenuOpen"
-            class="absolute right-0 mt-1 w-36 ui-card ui-border rounded-lg shadow-lg text-sm overflow-hidden z-10"
+            class="absolute right-0 mt-1 w-36 ui-card ui-border-all rounded-lg shadow-lg text-sm overflow-hidden z-10"
           >
             <NuxtLink
               :to="`/posts/${post.id}/edit`"
@@ -65,7 +65,7 @@
 
           <NuxtLink
             :to="`/posts/${post.repost_of_comment.post_id}`"
-            class="block rounded-xl ui-border ui-bg p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
+            class="block rounded-xl ui-border-all ui-bg p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
             @click.stop
           >
             <div class="ui-muted text-xs mb-1">
@@ -94,7 +94,7 @@
       <!-- topic-->
       <div v-if="post.topic" class="mt-2">
         <button
-          class="text-sm px-2 py-1 rounded-full ui-border ui-card ui-text ui-card-hover"
+          class="text-sm px-2 py-1 rounded-full ui-border-all ui-card ui-text ui-card-hover"
           @click.stop="navigateTo({ path: '/', query: { topic: post.topic } })"
         >
           #{{ post.topic }}

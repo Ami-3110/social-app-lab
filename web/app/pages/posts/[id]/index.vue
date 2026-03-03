@@ -30,7 +30,7 @@
 
             <p class="text-xs ui-muted flex items-center gap-2">
               <span
-                class="inline-flex h-7 w-7 items-center justify-center rounded-full ui-border ui-text text-[11px] font-bold"
+                class="inline-flex h-7 w-7 items-center justify-center rounded-full ui-border-all ui-text text-[11px] font-bold"
               >
                 {{ (post.user?.name ?? 'U').slice(0,1).toUpperCase() }}
               </span>
@@ -52,7 +52,7 @@
 
             <div
               v-if="menuOpen"
-              class="absolute right-0 mt-1 w-36 rounded-lg ui-menu ui-border shadow-lg text-sm overflow-hidden"
+              class="absolute right-0 mt-1 w-36 rounded-lg ui-menu ui-border-all shadow-lg text-sm overflow-hidden"
             >
               <NuxtLink
                 :to="`/posts/${post.id}/edit`"
@@ -78,7 +78,7 @@
 
         <!-- 本文（浮かせない） -->
         <div
-          class="p-2 rounded-xl ui-bg ui-border leading-relaxed whitespace-pre-wrap"
+          class="p-2 rounded-xl ui-bg ui-border-all leading-relaxed whitespace-pre-wrap"
         >
             <!-- Itself  -->
             <div v-if="post.quote_body?.trim()" class="mt-2 whitespace-pre-wrap text-m">
@@ -92,7 +92,7 @@
             <!-- Original post -->
             <div
               v-if="post.original_post"
-              class="mt-3 rounded-xl ui-border ui-bg p-3"
+              class="mt-3 rounded-xl ui-border-all ui-bg p-3"
             >
               <div class="ui-muted text-xs mb-2">
                 {{ post.original_post.user?.name ?? 'Unknown' }}
@@ -123,48 +123,76 @@
           />
         </div>
       </div>
+      </div>
         <!-- Comment form -->
         <form class="mt-4 flex gap-2" @submit.prevent="onSubmit">
           <input
             ref="commentInputRef"
             v-model="body"
             type="text"
-            class="flex-1 rounded ui-border ui-bg px-3 py-2 text-sm"
+            class="flex-1 rounded ui-border-all ui-bg px-3 py-2 text-sm"
             placeholder="Write a comment..."
           />
           <button
             type="submit"
-            class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
+            class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             Send
           </button>
         </form>
 
-        <div v-if="replyTo" class="mt-2 text-xs ui-text opacity-80">
-          Replying to {{ replyTo.user.name }}
-          <button
-          type="button"
-          class="ml-2 underline"
-          @click="replyToCommentId = null"
-          >
-          Cancel
-          </button>
-        </div>
-
         <!-- Comment card -->
-        <h2 class="mt-6 text-sm font-semibold ui-text">Comments</h2>
-        <CommentCard
-          v-for="c in comments"
-          :key="c.id"
-          :comment="c"
-          :me-id="myUserId ?? null"
-          @like="onClickCommentLike"
-          @comment="onClickCommentReply"
-          @repost="onClickCommentRepost"
-          @bookmark="onClickCommentBookmark"
-          @updated="onCommentUpdated"
-          @deleted="onDeleteComment"
-        />
+        <div v-for="group in threaded" :key="group.parent.id" class="relative py-4 border-b ui-border">
+
+          <!-- Parent comment -->
+          <CommentCard
+            :comment="group.parent"
+            :me-id="myUserId ?? null"
+            @like="onClickCommentLike"
+            @comment="onClickCommentReply"
+            @repost="onClickCommentRepost"
+            @bookmark="onClickCommentBookmark"
+            @updated="onCommentUpdated"
+            @deleted="onDeleteComment"
+          />
+          <!-- Parent reply form -->
+          <div v-if="activeReplyCommentId === group.parent.id" class="mt-2">
+            <textarea
+              v-model="replyBodies[group.parent.id]"
+              rows="2"
+              class="w-full rounded ui-border-all ui-bg px-3 py-2 text-sm"
+              :placeholder="`Reply to ${group.parent.user?.name ?? 'user'}...`"
+            />
+            <div class="flex justify-end gap-2 mt-2">
+              <button type="button" class="px-3 py-1 text-sm ui-border-all ui-text rounded" @click="closeReply">
+                Cancel
+              </button>
+              <button type="button" class="px-3 py-1 text-sm ui-border-all ui-text rounded" @click="submitReply(group.parent)">
+                Reply
+              </button>
+            </div>
+          </div>
+
+          <!-- Children area -->
+          <div
+            v-if="group.children.length"
+            class="mt-3 pl-10">
+            <div v-for="child in group.children" :key="child.id" class="mt-4">
+              <div class="ml-4 border-t ui-border">   
+                  <CommentCard
+                    :comment="child"
+                    :me-id="myUserId ?? null"
+                    @like="onClickCommentLike"
+                    @comment="() => goToThread(child)"
+                    @repost="onClickCommentRepost"
+                    @bookmark="onClickCommentBookmark"
+                    @updated="onCommentUpdated"
+                    @deleted="onDeleteComment"
+                  />
+              </div> 
+            </div>
+          </div>
+        </div>
 
       <!-- Repost Modal -->
       <div
@@ -172,7 +200,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
         @click.self="closeRepostModal"
       >
-        <div class="w-full max-w-lg rounded-2xl ui-bg ui-text ui-border p-4 shadow-xl">
+        <div class="w-full max-w-lg rounded-2xl ui-bg ui-text ui-border-all p-4 shadow-xl">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold">Repost</h3>
             <button class="ui-muted hover:ui-text" type="button" @click="closeRepostModal">✕</button>
@@ -181,10 +209,10 @@
           <textarea
             v-model="quoteBody"
             rows="4"
-            class="w-full rounded ui-border ui-bg px-3 py-2 text-sm"
+            class="w-full rounded ui-border-all ui-bg px-3 py-2 text-sm"
             placeholder="Add a comment (optional)..."
           />
-          <div v-if="post" class="mt-3 rounded-xl ui-border ui-bg p-3">
+          <div v-if="post" class="mt-3 rounded-xl ui-border-allui-bg p-3">
             <div class="ui-muted text-xs mb-2">
               {{ post.user?.name ?? 'Unknown' }}
             </div>
@@ -199,7 +227,7 @@
           <div class="mt-3 flex items-center justify-end gap-2">
             <button
               type="button"
-              class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
+              class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
               @click="closeRepostModal"
             >
               Cancel
@@ -207,7 +235,7 @@
 
             <button
               type="button"
-              class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
+              class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
               @click="submitRepost"
             >
               {{ quoteBody.trim() ? 'Quote' : 'Repost' }}
@@ -215,7 +243,6 @@
           </div>
         </div>
       </div>
-    </div>
   </main>
 </template>
 
@@ -230,12 +257,11 @@ import { usePost } from '~/composables/usePost'
 import type { Comment } from '~/types/Comment'
 import { useRoute } from 'vue-router'
 import { useAuthState } from '~/composables/useAuth'
-
-
-// NuxtApp
-const { $apiFetch } = useNuxtApp() // ← これが必要（ここでlike/bookmark叩くため）
+import { useComments } from '~/composables/useComments'
 
 const route = useRoute()
+// NuxtApp
+const { $apiFetch } = useNuxtApp() // ← これが必要（ここでlike/bookmark叩くため）
 
 // Post data and actions
 const { data, pending, error, deleting, deleteError, deletePost, refresh } = usePost()
@@ -245,16 +271,29 @@ const post = computed<any>(() => (data.value as any)?.data ?? data.value)
 
 // ✅ コメント取得は route.params.id を使う（postが取れる前でも動く）
 const postId = computed(() => Number(route.params.id))
+// Auth
+const {user} = useAuthState()
+const myUserId = computed(() => user.value?.id)
 
+const isMyComment = (c: Comment) => {
+  if (!myUserId.value) return false
+  return c.user.id === myUserId.value
+}
 
+// --------- << Action to Post >> ---------
 // Menu
 const menuOpen = ref(false)
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
 }
 
-// Like/Bookmark
+// Like count
 const isLiked = computed(() => Number(post.value?.is_liked ?? 0) === 1)
+
+// Repost count
+const isReposted = computed(() => Number(post.value?.is_reposted ?? 0) === 1)
+
+// Bookmark count
 const isBookmarked = computed(() => Number(post.value?.is_bookmarked ?? 0) === 1)
 
 // Likes
@@ -269,22 +308,16 @@ const onClickLike = async () => {
   await refresh()
 }
 
-// Repost modal
+// Repost / Quote
 const repostModalOpen = ref(false)
 const quoteBody = ref('')
-
 const openRepostModal = () => {
   quoteBody.value = '' // 毎回クリア（好みで保持でもOK）
   repostModalOpen.value = true
 }
-
 const closeRepostModal = () => {
   repostModalOpen.value = false
 }
-
-// Repost
-const isReposted = computed(() => Number(post.value?.is_reposted ?? 0) === 1)
-
 const submitRepost = async () => {
   if (!post.value) return
 
@@ -300,13 +333,6 @@ const submitRepost = async () => {
   await refresh()
 }
 
-const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && repostModalOpen.value) closeRepostModal()
-}
-
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
-
 // Bookmark
 const onClickBookmark = async () => {
   if (!post.value) return
@@ -319,6 +345,16 @@ const onClickBookmark = async () => {
   await refresh()
 }
 
+// Escape key handler
+const onKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && repostModalOpen.value) closeRepostModal()
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+
+
+// --------- << Comments INDEX >> ---------
 // Comment part paginated response type
 type Paginated<T> = {
   data: T[]
@@ -329,7 +365,6 @@ type Paginated<T> = {
 }
 
 // Comments data
-const body = ref('')
 const { data: commentsRes, refresh: refreshComments } = useAsyncData<Paginated<Comment> | null>(
   () => (postId.value ? `post:${postId.value}:comments` : 'post::comments'),
   async () => {
@@ -341,99 +376,41 @@ const { data: commentsRes, refresh: refreshComments } = useAsyncData<Paginated<C
 
 const comments = computed(() => commentsRes.value?.data ?? [])
 
-// Comment-reply
-const replyToCommentId = ref<number | null>(null)
+const threaded = computed(() => {
+  const list = comments.value
 
-const replyTo = computed(() => {
-  if (!replyToCommentId.value) return null
-  return comments.value.find(c => c.id === replyToCommentId.value) ?? null
+  const parents = list.filter(c => !c.parent_id)
+
+  return parents.map(parent => ({
+    parent,
+    children: list.filter(c => c.parent_id === parent.id)
+  }))
 })
 
-const onClickCommentReply = (commentId: number) => {
-  replyToCommentId.value = commentId
-  nextTick(() => commentInputRef.value?.focus())
+const goToThread = (c: Comment) => {
+  navigateTo(`/comments/${c.root_id}`) // 例。あとで作るページ用
 }
 
-// Comment Submit
+// --------- << Comment FORM >> ---------
+const body = ref('')
+
+
+const commentInputRef = ref<HTMLTextAreaElement | null>(null)
+
 const onSubmit = async () => {
   if (!post.value) return
   const text = body.value.trim()
   if (!text) return
 
   await $apiFetch(`/posts/${post.value.id}/comments`, {
-  method: 'POST',
-  body: {
-    body: text,
-    parent_id: replyToCommentId.value,
-  },
-})
-
-replyToCommentId.value = null
+    method: 'POST',
+    body: { body: text },
+  })
 
   body.value = ''
   await refreshComments()
   await refresh()
 }
-
-const commentInputRef = ref<HTMLInputElement | null>(null)
-
-//?
-const {user} = useAuthState()
-const myUserId = computed(() => user.value?.id)
-
-//const isMyComment = (c: Comment) => {
-//  if (!myUserId.value) return false
-//  return c.user.id === myUserId.value
-//}
-
-const deletingCommentId = ref<number | null>(null)
-
-// Comment Delete
-const onDeleteComment = async (commentId: number) => {
-    await refreshComments()
-    await refresh()
-}
-
-// Comment like
-const onClickCommentLike = async (commentId: number) => {
-  const c = comments.value.find(x => Number(x.id) === Number(commentId))
-  const liked = Number(c?.is_liked ?? 0) === 1
-
-  await $apiFetch(`/comments/${commentId}/like`, {
-    method: liked ? 'DELETE' : 'POST',
-  })
-
-  await refreshComments()
-}
-
-// Comment reply
-
-
-// Comment repost
-const onClickCommentRepost = async (commentId: number) => {
-  const c = comments.value.find(x => x.id === commentId)
-  if (!c) return
-
-  await $apiFetch(`/comments/${commentId}/repost`, {
-    method: c.is_reposted ? 'DELETE' : 'POST',
-  })
-
-  await refreshComments()
-}
-
-// Comment bookmark
-const onClickCommentBookmark = async (commentId: number) => {
-  const c = comments.value.find(x => Number(x.id) === Number(commentId))
-  const bookmarked = Boolean(c?.is_bookmarked)
-
-  await $apiFetch(`/comments/${commentId}/bookmark`, {
-    method: bookmarked ? 'DELETE' : 'POST',
-  })
-
-  await refreshComments()
-}
-
-
 
 // Focus comment input if ?focus=comment
 onMounted(async () => {
@@ -455,11 +432,67 @@ const focusCommentInput = async () => {
   commentInputRef.value?.focus()
 }
 
-//未実装のやつ
 
+// --------- << Action to Comment >> ---------
+// Comment Update （未実装のやつ）
 const onCommentUpdated = async () => {
   await refreshComments()
 }
 
+// Comment Delete
+const onDeleteComment = async (commentId: number) => {
+    await refreshComments()
+    await refresh()
+}
+
+// Comment action
+const commentActions = useComments({ refresh: refreshComments })
+
+// Comment like
+const onClickCommentLike = async (c: Comment) => {
+  await commentActions.toggleLike(c)
+}
+
+// Comment reply
+const activeReplyCommentId = ref<number | null>(null)
+const replyBodies = ref<Record<number, string>>({}) // commentId -> text
+const onClickCommentReply = (c: Comment) => {
+  openReply(c)
+}
+
+const openReply = (c: Comment) => {
+  activeReplyCommentId.value = c.id
+  if (replyBodies.value[c.id] == null) replyBodies.value[c.id] = ''
+}
+
+const closeReply = () => {
+  activeReplyCommentId.value = null
+}
+
+const submitReply = async (parent: Comment) => {
+  if (!post.value) return
+  const text = (replyBodies.value[parent.id] ?? '').trim()
+  if (!text) return
+
+  await $apiFetch(`/posts/${post.value.id}/comments`, {
+    method: 'POST',
+    body: { body: text, parent_id: parent.id },
+  })
+
+  replyBodies.value[parent.id] = ''
+  activeReplyCommentId.value = null
+  await refreshComments()
+  await refresh()
+}
+
+// Comment repost
+const onClickCommentRepost = async (c: Comment) => {
+  await commentActions.toggleRepost(c)
+}
+
+// Comment bookmark
+const onClickCommentBookmark = async (c: Comment) => {
+  await commentActions.toggleBookmark(c)
+}
 
 </script>

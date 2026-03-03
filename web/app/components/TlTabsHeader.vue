@@ -6,7 +6,7 @@
         <button
           v-for="t in tabs"
           :key="t"
-          class="px-3 py-1 rounded-full text-sm ui-border ui-menu-item"
+          class="px-3 py-1 rounded-full text-sm ui-border-all ui-menu-item"
           :class="activeTab === t
             ? 'font-semibold bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100'
             : 'ui-muted'"

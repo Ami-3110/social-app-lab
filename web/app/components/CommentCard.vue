@@ -1,17 +1,21 @@
 <!-- components/CommentCard.vue -->
 <template>
-  <div class="border-b dark:border-zinc-700 py-4">
+  <div class="py-3">
     <!-- header row -->
-     <div v-if="comment.parent" class="mb-2 text-xs ui-text opacity-70">
-  Replying to {{ comment.parent.user.name }}: {{ comment.parent.body }}
-</div>
+    <!--<div v-if="comment.parent" class="mb-2 text-xs ui-text opacity-70">
+      Replying to {{ comment.parent.user.name }}: {{ comment.parent.body }}
+    </div>-->
 
     <div class="flex items-start justify-between gap-2">
-      <div class="text-sm min-w-0">
-        <div class="font-semibold truncate">
-          {{ comment.user?.name ?? 'Unknown' }}
-        </div>
-      </div>    
+      <p class="text-xs ui-muted flex items-center gap-2">
+        <span
+          class="inline-flex h-7 w-7 items-center justify-center rounded-full ui-border-all ui-text text-[11px] font-bold"
+        >
+          {{ (comment.user?.name ?? 'U').slice(0,1).toUpperCase() }}
+        </span>
+        <span>{{ comment.user?.name }}</span>
+        <span>{{ new Date(comment.created_at).toLocaleString() }}</span>
+      </p>
 
       <!-- ✅ 三点メニュー（自分のコメントだけ） -->
       <div v-if="canManage" class="relative">
@@ -19,7 +23,7 @@
           ⋯
         </button>
 
-        <div v-if="menuOpen" class="absolute right-0 mt-1 w-32 rounded ui-border ui-bg shadow">
+        <div v-if="menuOpen" class="absolute right-0 mt-1 w-32 rounded ui-border-all ui-bg shadow">
           <button
             class="block w-full text-left px-3 py-2 text-sm hover:opacity-90"
             type="button"
@@ -44,14 +48,14 @@
         <textarea
           v-model="draft"
           rows="2"
-          class="w-full rounded ui-border ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
+          class="w-full rounded ui-border-all ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
         />
         <div class="flex justify-end gap-2 mt-2">
-          <button class="px-3 py-1 text-sm ui-border rounded" type="button" @click="cancelEdit">
+          <button class="px-3 py-1 text-sm ui-border-all rounded" type="button" @click="cancelEdit">
             Cancel
           </button>
           <button
-            class="px-3 py-1 text-sm ui-border rounded"
+            class="px-3 py-1 text-sm ui-border-all rounded"
             type="button"
             :disabled="busy || !draft.trim()"
             @click="saveEdit"
@@ -60,12 +64,12 @@
           </button>
         </div>
       </div>
-      <div v-else class="whitespace-pre-wrap">
+      <div v-else class="px-10 whitespace-pre-wrap">
         {{ comment.body }}
       </div>
     </div>
 
-    <div class="mt-2">
+    <div class="mt-2 px-8">
       <ActionBar
         :is-liked="comment.is_liked ?? false"
         :likes-count="comment.likes_count ?? 0"
@@ -73,10 +77,10 @@
         :reposts-count="comment.reposts_count ?? 0"
         :is-bookmarked="comment.is_bookmarked ?? false"
         :repost-disabled="false"
-        @like="emit('like', comment.id)"
-        @comment="emit('comment', comment.id)"
-        @repost="emit('repost', comment.id)"
-        @bookmark="emit('bookmark', comment.id)"
+        @like="emit('like', comment)"
+        @comment="emit('comment', comment)"
+        @repost="emit('repost', comment)"
+        @bookmark="emit('bookmark', comment)"
       />
     </div>
   </div>
@@ -92,10 +96,10 @@ const props = defineProps<{
 
 
 const emit = defineEmits<{
-  (e: 'like', commentId: number): void
-  (e: 'comment', commentId: number): void
-  (e: 'repost', commentId: number): void
-  (e: 'bookmark', commentId: number): void
+  (e: 'like', comment: Comment): void
+  (e: 'comment', comment: Comment): void
+  (e: 'repost', comment: Comment): void
+  (e: 'bookmark', comment: Comment): void
   (e: 'updated', comment: Comment): void
   (e: 'deleted', commentId: number): void
 }>()

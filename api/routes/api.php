@@ -50,56 +50,58 @@ Route::middleware('auth:sanctum')->group(function () {
     // Post destroy
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
 
-    // Bookmark index
+    // Post bookmark index
     Route::get('/bookmarks', [BookmarkController::class, 'index']);
-    // Bookmark store
+    // Post bookmark store
     Route::post('/posts/{post}/bookmark', [BookmarkController::class, 'store']);
-    // Bookmark destroy
-    Route::delete('/posts/{post}/bookmark', [BookmarkController::class, 'destroy']); 
+    // Post bookmark destroy
+    Route::delete('/posts/{post}/bookmark', [BookmarkController::class, 'destroy']);
 
-    // Like store
+    // Post like store
     Route::post('/posts/{post}/like', [PostLikeController::class, 'store']);
-    // Like destroy
+    // Post like destroy
     Route::delete('/posts/{post}/like', [PostLikeController::class, 'destroy']);
 
-    // Comment index
+    // Post comment index
     Route::get('/posts/{post}/comments', [PostCommentController::class, 'index']);
-    // Comment store
+    // Post comment store
     Route::post('/posts/{post}/comments', [PostCommentController::class, 'store']);
-    // Comment update
+    // Post comment update
     Route::patch('/comments/{comment}', [PostCommentController::class, 'update']);
-    // Comment destroy
+    // Post comment destroy
     Route::delete('/comments/{comment}', [PostCommentController::class, 'destroy']);
 
-    // repost store
+    // Post repost store
     Route::post('/posts/{post}/repost', [PostRepostController::class, 'store']);
-    // repost destroy
+    // Post repost destroy
     Route::delete('/posts/{post}/repost', [PostRepostController::class, 'destroy']);
 
-    // follow store
+    // Follow store
     Route::post('/users/{user}/follow', [FollowController::class, 'store']);
-    // follow destroy
+    // Follow destroy
     Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
-    // user info
+    // User info
     Route::get('/users/{user}', [UserController::class, 'show']);
-    // following
+    // Following
     Route::get('/users/{user}/following', [UserFollowListController::class, 'following']);
-    // follower
+    // Follower
     Route::get('/users/{user}/followers', [UserFollowListController::class, 'followers']);
 
-    // comment-like store
+    // Comment like store
     Route::post('/comments/{comment}/like', [CommentLikeController::class, 'store']);
-    // comment-like destroy
+    // Comment like destroy
     Route::delete('/comments/{comment}/like', [CommentLikeController::class, 'destroy']);
 
-    // comment-repost store
+    // Comment comment route is the same as Post comment
+
+    // Comment repost store
     Route::post('/comments/{comment}/repost', [CommentRepostController::class, 'store']);
-    // comment-repost destroy
+    // Comment repost destroy
     Route::delete('/comments/{comment}/repost', [CommentRepostController::class, 'destroy']);
 
-    // comment-bookmark store
+    // Comment bookmark store
     Route::post('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'store']);
-    // comment-bookmark destroy
+    // Comment bookmark destroy
     Route::delete('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'destroy']);
 });
 

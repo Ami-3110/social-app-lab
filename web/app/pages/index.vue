@@ -62,12 +62,12 @@
                     <textarea
                       v-model="commentBodies[post.id]"
                       rows="2"
-                      class="w-full rounded ui-border ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
+                      class="w-full rounded ui-border-all ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
                       placeholder="Write a comment..."
                     />
                     <div class="flex justify-end mt-2">
                       <button
-                        class="px-3 py-1 text-sm ui-border ui-text rounded"
+                        class="px-3 py-1 text-sm ui-border-all ui-text rounded"
                         @click="submitComment(post.id)"
                       >
                         Post
@@ -85,7 +85,7 @@
           <!-- ページネーション -->
           <nav class="flex items-center justify-center gap-8 mt-10" v-if="data">
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-md ui-border ui-text ui-card ui-card-hover text-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
+              class="flex items-center gap-2 px-4 py-2 rounded-md ui-border-all ui-text ui-card ui-card-hover text-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
               :disabled="!data.prev_page_url"
               @click="go(data.current_page - 1)"
             >
@@ -95,7 +95,7 @@
 
             <div class="flex items-center gap-2 text-sm ui-muted">
               <span>Page</span>
-              <span class="min-w-[2.2rem] text-center px-2 py-1 font-semibold rounded-md ui-border ui-card ui-text">
+              <span class="min-w-[2.2rem] text-center px-2 py-1 font-semibold rounded-md ui-border-all ui-card ui-text">
                 {{ data.current_page }}
               </span>
               <span>/</span>
@@ -103,7 +103,7 @@
             </div>
 
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-md ui-border ui-text ui-card ui-card-hover text-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
+              class="flex items-center gap-2 px-4 py-2 rounded-md ui-border-all ui-text ui-card ui-card-hover text-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
               :disabled="!data.next_page_url"
               @click="go(data.current_page + 1)"
             >
@@ -122,7 +122,7 @@
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
     @click.self="closeRepostModal"
   >
-    <div class="w-full max-w-lg rounded-2xl ui-bg ui-text ui-border p-4 shadow-xl">
+    <div class="w-full max-w-lg rounded-2xl ui-bg ui-text ui-border-all p-4 shadow-xl">
       <div class="flex items-center justify-between mb-3">
         <h3 class="text-sm font-semibold">
           Repost
@@ -133,12 +133,12 @@
       <textarea
         v-model="quoteBody"
         rows="4"
-        class="w-full rounded ui-border ui-bg px-3 py-2 text-sm"
+        class="w-full rounded ui-border-all ui-bg px-3 py-2 text-sm"
         placeholder="Add a comment (optional)..."
       />
 
       <!-- 元投稿プレビュー（任意だけど便利） -->
-      <div v-if="repostTarget" class="mt-3 rounded-xl ui-border ui-bg p-3">
+      <div v-if="repostTarget" class="mt-3 rounded-xl ui-border-all ui-bg p-3">
         <div class="ui-muted text-xs mb-2">
           {{ repostTarget.user?.name ?? 'Unknown' }}
         </div>
@@ -153,7 +153,7 @@
       <div class="mt-4 flex items-center justify-end gap-2">
         <button
           type="button"
-          class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
+          class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
           @click="closeRepostModal"
         >
           Cancel
@@ -161,7 +161,7 @@
 
         <button
           type="button"
-          class="rounded px-3 py-2 text-sm ui-border hover:bg-gray-50 dark:hover:bg-gray-800"
+          class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
           @click="submitRepost"
         >
           {{ quoteBody.trim() ? 'Quote' : 'Repost' }}

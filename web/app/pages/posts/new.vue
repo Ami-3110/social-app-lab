@@ -9,7 +9,7 @@
 
       <!-- フォーム（浮かせない面） -->
       <form
-        class="space-y-4 p-6 ui-card ui-border rounded-xl"
+        class="space-y-4 p-6 ui-card ui-border-all rounded-xl"
         @submit.prevent="submit"
       >
         <!-- Title -->
@@ -20,7 +20,7 @@
           <input
             v-model="title"
             type="text"
-            class="w-full rounded-xl px-3 py-2 ui-bg ui-text ui-border"
+            class="w-full rounded-xl px-3 py-2 ui-bg ui-text ui-border-all"
             maxlength="120"
             required
           >
@@ -29,7 +29,7 @@
         <!-- Topic -->
         <div>
           <label class="block text-sm font-medium mb-1 ui-muted">Topic (optional)</label>
-          <input v-model="topic" type="text" class="w-full rounded-xl px-3 py-2 ui-bg ui-text ui-border" maxlength="100">
+          <input v-model="topic" type="text" class="w-full rounded-xl px-3 py-2 ui-bg ui-text ui-border-all" maxlength="100">
         </div>
 
         <!-- Body -->
@@ -39,7 +39,7 @@
           </label>
           <textarea
             v-model="body"
-            class="w-full rounded-xl px-3 py-2 h-40 ui-bg ui-text ui-border"
+            class="w-full rounded-xl px-3 py-2 h-40 ui-bg ui-text ui-border-all"
             required
           ></textarea>
         </div>
@@ -55,7 +55,7 @@
 
           <NuxtLink
             to="/posts"
-            class="px-4 py-2 rounded ui-border ui-muted hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+            class="px-4 py-2 rounded ui-border-all ui-muted hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
           >
             Cancel
           </NuxtLink>

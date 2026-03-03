@@ -33,7 +33,7 @@
         <!-- ページネーション -->
           <nav class="flex items-center justify-center gap-8 mt-10" v-if="data">
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-md ui-border ui-text ui-card ui-card-hover text-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
+              class="flex items-center gap-2 px-4 py-2 rounded-md ui-border-all ui-text ui-card ui-card-hover text-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
               :disabled="!data.prev_page_url"
               @click="go(data.current_page - 1)"
             >
@@ -43,7 +43,7 @@
 
             <div class="flex items-center gap-2 text-sm ui-muted">
               <span>Page</span>
-              <span class="min-w-[2.2rem] text-center px-2 py-1 font-semibold rounded-md ui-border ui-card ui-text">
+              <span class="min-w-[2.2rem] text-center px-2 py-1 font-semibold rounded-md ui-border-all ui-card ui-text">
                 {{ data.current_page }}
               </span>
               <span>/</span>
@@ -51,7 +51,7 @@
             </div>
 
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-md ui-border ui-text ui-card ui-card-hover text-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
+              class="flex items-center gap-2 px-4 py-2 rounded-md ui-border-all ui-text ui-card ui-card-hover text-sm disabled:opacity-40 disabled:cursor-not-allowed transition"
               :disabled="!data.next_page_url"
               @click="go(data.current_page + 1)"
             >
