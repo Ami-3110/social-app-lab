@@ -79,7 +79,7 @@
         :repost-disabled="false"
         @like="emit('like', comment)"
         @comment="emit('comment', comment)"
-        @repost="emit('repost', comment)"
+        @repost="() => openComment(comment)"
         @bookmark="emit('bookmark', comment)"
       />
     </div>
@@ -154,5 +154,6 @@ const doDelete = async () => {
     busy.value = false
   }
 }
+const { openComment } = useRepostModal()
 
 </script>

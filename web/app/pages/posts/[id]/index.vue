@@ -118,7 +118,7 @@
             :repost-disabled="false"
             @like="onClickLike"
             @comment="focusCommentInput"
-            @repost="openRepostModal"
+            @repost="openPost(post)"
             @bookmark="onClickBookmark"
           />
         </div>
@@ -150,7 +150,7 @@
             :me-id="myUserId ?? null"
             @like="onClickCommentLike"
             @comment="onClickCommentReply"
-            @repost="onClickCommentRepost"
+            @repost="openComment"
             @bookmark="onClickCommentBookmark"
             @updated="onCommentUpdated"
             @deleted="onDeleteComment"
@@ -184,7 +184,7 @@
                     :me-id="myUserId ?? null"
                     @like="onClickCommentLike"
                     @comment="() => goToThread(child)"
-                    @repost="onClickCommentRepost"
+                    @repost="openComment"
                     @bookmark="onClickCommentBookmark"
                     @updated="onCommentUpdated"
                     @deleted="onDeleteComment"
@@ -193,56 +193,6 @@
             </div>
           </div>
         </div>
-
-      <!-- Repost Modal -->
-      <div
-        v-if="repostModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-        @click.self="closeRepostModal"
-      >
-        <div class="w-full max-w-lg rounded-2xl ui-bg ui-text ui-border-all p-4 shadow-xl">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold">Repost</h3>
-            <button class="ui-muted hover:ui-text" type="button" @click="closeRepostModal">✕</button>
-          </div>
-
-          <textarea
-            v-model="quoteBody"
-            rows="4"
-            class="w-full rounded ui-border-all ui-bg px-3 py-2 text-sm"
-            placeholder="Add a comment (optional)..."
-          />
-          <div v-if="post" class="mt-3 rounded-xl ui-border-allui-bg p-3">
-            <div class="ui-muted text-xs mb-2">
-              {{ post.user?.name ?? 'Unknown' }}
-            </div>
-            <div class="font-semibold text-sm leading-snug">
-              {{ post.title }}
-            </div>
-            <div class="mt-1 whitespace-pre-wrap text-sm ui-muted">
-              {{ post.body }}
-            </div>
-          </div>
-
-          <div class="mt-3 flex items-center justify-end gap-2">
-            <button
-              type="button"
-              class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
-              @click="closeRepostModal"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
-              @click="submitRepost"
-            >
-              {{ quoteBody.trim() ? 'Quote' : 'Repost' }}
-            </button>
-          </div>
-        </div>
-      </div>
   </main>
 </template>
 
@@ -290,9 +240,6 @@ const toggleMenu = () => {
 // Like count
 const isLiked = computed(() => Number(post.value?.is_liked ?? 0) === 1)
 
-// Repost count
-const isReposted = computed(() => Number(post.value?.is_reposted ?? 0) === 1)
-
 // Bookmark count
 const isBookmarked = computed(() => Number(post.value?.is_bookmarked ?? 0) === 1)
 
@@ -309,29 +256,7 @@ const onClickLike = async () => {
 }
 
 // Repost / Quote
-const repostModalOpen = ref(false)
-const quoteBody = ref('')
-const openRepostModal = () => {
-  quoteBody.value = '' // 毎回クリア（好みで保持でもOK）
-  repostModalOpen.value = true
-}
-const closeRepostModal = () => {
-  repostModalOpen.value = false
-}
-const submitRepost = async () => {
-  if (!post.value) return
-
-  const q = quoteBody.value.trim()
-
-  await $apiFetch(`/posts/${post.value.id}/repost`, {
-    method: 'POST',
-    body: { quote_body: q === '' ? null : q },
-  })
-
-  repostModalOpen.value = false
-  quoteBody.value = ''
-  await refresh()
-}
+const { openPost, openComment } = useRepostModal()
 
 // Bookmark
 const onClickBookmark = async () => {
@@ -344,15 +269,6 @@ const onClickBookmark = async () => {
 
   await refresh()
 }
-
-// Escape key handler
-const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && repostModalOpen.value) closeRepostModal()
-}
-
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
-
 
 // --------- << Comments INDEX >> ---------
 // Comment part paginated response type
@@ -483,11 +399,6 @@ const submitReply = async (parent: Comment) => {
   activeReplyCommentId.value = null
   await refreshComments()
   await refresh()
-}
-
-// Comment repost
-const onClickCommentRepost = async (c: Comment) => {
-  await commentActions.toggleRepost(c)
 }
 
 // Comment bookmark

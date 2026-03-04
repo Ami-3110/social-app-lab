@@ -111,7 +111,7 @@
         :repost-disabled="false"
         @like="onClickLike"
         @comment="emit('toggle-comment', post.id)"
-        @repost="emit('open-repost', post)"
+        @repost="() => openPost(post)"
         @bookmark="ToggleBookmark"
       />
       <!-- PostCard枠内に差し込み -->
@@ -157,11 +157,7 @@ const onClickLike = () => {
 }
 
 // Repost
-const { toggleRepost } = usePosts()
-
-const onClickRepost = async () => {
-  await toggleRepost(props.post)
-}
+const { openPost } = useRepostModal()
 
 // Bookmark
 const { toggleBookmark } = usePosts()

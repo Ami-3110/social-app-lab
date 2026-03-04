@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Post destroy
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
 
+    //------- Action to POST -------
     // Post bookmark index
     Route::get('/bookmarks', [BookmarkController::class, 'index']);
     // Post bookmark store
@@ -76,8 +77,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Post repost destroy
     Route::delete('/posts/{post}/repost', [PostRepostController::class, 'destroy']);
 
-    // Follow store
-    Route::post('/users/{user}/follow', [FollowController::class, 'store']);
+  //------- Follow/Follower -------
+  // Follow store
+  Route::post('/users/{user}/follow', [FollowController::class, 'store']);
     // Follow destroy
     Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
     // User info
@@ -87,6 +89,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Follower
     Route::get('/users/{user}/followers', [UserFollowListController::class, 'followers']);
 
+    //------- Action to COMMENT -------
     // Comment like store
     Route::post('/comments/{comment}/like', [CommentLikeController::class, 'store']);
     // Comment like destroy
@@ -103,6 +106,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'store']);
     // Comment bookmark destroy
     Route::delete('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'destroy']);
+    
 });
 
 // logout

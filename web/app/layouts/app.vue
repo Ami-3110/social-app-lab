@@ -88,6 +88,7 @@
         </main>
       </div>
     </div>
+    <RepostQuoteModal />
   </div>
 </template>
 

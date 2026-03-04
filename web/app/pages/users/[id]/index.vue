@@ -26,7 +26,7 @@
 
       <!-- Buttons row -->
       <section class="flex gap-2">
-        <!-- 自分だけ -->
+        <!-- own -->
         <button
           v-if="isMe"
           type="button"
@@ -36,7 +36,7 @@
           Edit profile
         </button>
 
-        <!-- 他人だけ -->
+        <!-- others -->
         <button
           v-else
           type="button"
@@ -107,7 +107,7 @@
                     @toggle-comment="onToggleComment"
                     @bookmark-changed="onBookmarkChanged"
                     @delete="onDelete"
-                    @open-repost="openRepostModal"
+                    @open-repost="openPost"
                   >
                     <template #below-actions>
                       <!-- ✅ posted comment（枠線＋アイコン＋名前） -->
@@ -155,7 +155,7 @@
               </ul>
               <p v-if="deleteError" class="text-red-600 text-sm mt-2">{{ deleteError }}</p>
 
-              <!-- ページネーション -->
+              <!-- Pagination -->
               <nav class="flex items-center justify-center gap-8 mt-10" v-if="postsData">
                 <button :disabled="!postsData.prev_page_url" @click="go(postsData.current_page - 1)">Prev</button>
                 <span>{{ postsData.current_page }} / {{ postsData.last_page }}</span>
@@ -165,59 +165,6 @@
           </div>
         </div>
       </section>
-      <!-- Repost / Quote Modal -->
-      <div
-        v-if="repostModalOpen"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-        @click.self="closeRepostModal"
-      >
-        <div class="w-full max-w-lg rounded-2xl ui-bg ui-text ui-border-all p-4 shadow-xl">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold">
-              Repost
-            </h3>
-            <button class="ui-muted hover:ui-text" type="button" @click="closeRepostModal">✕</button>
-          </div>
-
-          <textarea
-            v-model="quoteBody"
-            rows="4"
-            class="w-full rounded ui-border-all ui-bg px-3 py-2 text-sm"
-            placeholder="Add a comment (optional)..."
-          />
-
-          <!-- 元投稿プレビュー（任意だけど便利） -->
-          <div v-if="repostTarget" class="mt-3 rounded-xl ui-border-all ui-bg p-3">
-            <div class="ui-muted text-xs mb-2">
-              {{ repostTarget.user?.name ?? 'Unknown' }}
-            </div>
-            <div class="font-semibold text-sm leading-snug">
-              {{ repostTarget.title }}
-            </div>
-            <div class="mt-1 whitespace-pre-wrap text-sm ui-muted">
-              {{ repostTarget.body }}
-            </div>
-          </div>
-
-          <div class="mt-4 flex items-center justify-end gap-2">
-            <button
-              type="button"
-              class="rounded px-3 py-2 text-sm -all hover:bg-gray-50 dark:hover:bg-gray-800"
-              @click="closeRepostModal"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
-              @click="submitRepost"
-            >
-              {{ quoteBody.trim() ? 'Quote' : 'Repost' }}
-            </button>
-          </div>
-        </div>
-      </div>
     </section>
   </main>
 </template>
@@ -293,12 +240,12 @@ const toggleFollow = async () => {
 }
 
 // buttons
-const onEditProfile = () => navigateTo('/profile/edit') // 後で作る
+const onEditProfile = () => navigateTo('/profile/edit') // ⭐️後で作る
 const onOpenFollowing = () => navigateTo(`/users/${userId.value}/following`)
 const onOpenFollowers = () => navigateTo(`/users/${userId.value}/followers`)
 
 // tabs
-const tabs = ['Post', 'Comment', 'Media', 'Repost'] as const
+const tabs = ['Post', 'Comment', 'Media', 'Liked'] as const
 type ProfileTab = typeof tabs[number]
 const activeTab = ref<ProfileTab>('Post')
 
@@ -377,45 +324,7 @@ const onBookmarkChanged = async () => {
   })
 }
 
-// Repost Modal
-const repostModalOpen = ref(false)
-const repostTarget = ref<Post | null>(null)
-const quoteBody = ref('')
-
-const openRepostModal = (post: Post) => {
-  repostTarget.value = post
-  quoteBody.value = ''
-  repostModalOpen.value = true
-}
-
-const closeRepostModal = () => {
-  repostModalOpen.value = false
-  repostTarget.value = null
-  quoteBody.value = ''
-}
-
-const submitRepost = async () => {
-  const target = repostTarget.value
-  if (!target) return
-
-  const q = quoteBody.value.trim()
-
-  await preserveScroll(async () => {
-    await $apiFetch(`/posts/${target.id}/repost`, {
-      method: 'POST',
-      body: { quote_body: q === '' ? null : q },
-    })
-    await refreshPosts()
-  })
-
-  closeRepostModal()
-}
-
-const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && repostModalOpen.value) closeRepostModal()
-}
-
-onMounted(() => window.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+// Repost / Quote
+const { openPost } = useRepostModal()
 
 </script>
