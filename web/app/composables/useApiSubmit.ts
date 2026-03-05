@@ -1,4 +1,4 @@
-// composables/useApiSubmit.ts
+// ~/omposables/useApiSubmit.ts
 import { ref } from 'vue'
 import { useForm } from 'vee-validate'
 import { useFormApiErrors } from '~/composables/useFormApiErrors'

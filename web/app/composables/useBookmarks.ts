@@ -1,3 +1,4 @@
+// ~/composables/useBookmarks.ts
 import type { Post } from '~/types/Post'
 
 type PostsResponse = {

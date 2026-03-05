@@ -1,4 +1,4 @@
-// composables/usePosts.ts
+// ~/composables/usePosts.ts
 import type { Post } from '~/types/Post'
 import type { Comment } from '~/types/Comment'
 

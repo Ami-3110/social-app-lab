@@ -1,4 +1,4 @@
-// composables/usePostActions.ts
+// ~/composables/usePostActions.ts
 export const usePostActions = (refresh: () => Promise<void>) => {
   const { $apiFetch } = useNuxtApp()
 

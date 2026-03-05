@@ -77,17 +77,23 @@ Route::middleware('auth:sanctum')->group(function () {
     // Post repost destroy
     Route::delete('/posts/{post}/repost', [PostRepostController::class, 'destroy']);
 
-  //------- Follow/Follower -------
-  // Follow store
-  Route::post('/users/{user}/follow', [FollowController::class, 'store']);
+  //------- My page -------
+   // Follow store
+   Route::post('/users/{user}/follow', [FollowController::class, 'store']);
     // Follow destroy
     Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
-    // User info
+    // Mypage Top(defalt: post tab)
     Route::get('/users/{user}', [UserController::class, 'show']);
     // Following
     Route::get('/users/{user}/following', [UserFollowListController::class, 'following']);
     // Follower
     Route::get('/users/{user}/followers', [UserFollowListController::class, 'followers']);
+    // Mypage comment tab
+    Route::get('/users/{user}/comments', [UserController::class, 'comments']);
+  // Mypage media tab
+
+    // Mypage liked tab
+    Route::get('/users/{user}/liked-posts', [UserController::class, 'likedPosts']);
 
     //------- Action to COMMENT -------
     // Comment like store
@@ -106,7 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'store']);
     // Comment bookmark destroy
     Route::delete('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'destroy']);
-    
+
 });
 
 // logout

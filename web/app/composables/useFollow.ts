@@ -1,4 +1,4 @@
-// composables/useFollow.ts
+// ~/composables/useFollow.ts
 
 export const useFollow = () => {
   const { $apiFetch } = useNuxtApp()

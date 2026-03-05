@@ -79,7 +79,7 @@
         :repost-disabled="false"
         @like="emit('like', comment)"
         @comment="emit('comment', comment)"
-        @repost="() => openComment(comment)"
+        @repost="emit('repost', comment)"
         @bookmark="emit('bookmark', comment)"
       />
     </div>
@@ -93,7 +93,6 @@ const props = defineProps<{
   comment: Comment
   meId?: number | null
 }>()
-
 
 const emit = defineEmits<{
   (e: 'like', comment: Comment): void

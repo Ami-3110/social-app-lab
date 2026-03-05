@@ -1,4 +1,4 @@
-// composables/useComments.ts
+// ~/composables/useComments.ts
 import type { Comment } from '~/types/Comment'
 
 export const useComments = (opts: { refresh?: () => Promise<void> } = {}) => {

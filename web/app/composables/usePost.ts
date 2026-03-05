@@ -1,4 +1,4 @@
-// app/composables/usePost.ts
+// ~/composables/usePost.ts
 import type { Post } from '~/types/Post'
 
 export const usePost = (postId?: number | string) => {

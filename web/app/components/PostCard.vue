@@ -56,8 +56,8 @@
         </div>
       </div>
       <!-- body -->
-      <p class="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed ui-text">
-        <!-- Itself / Quote / Comment-repost / Normal -->
+      <div class="mt-2 text-[15px] leading-relaxed ui-text">
+        <!-- 1) Comment-repost -->
         <div v-if="post.repost_of_comment_id && post.repost_of_comment" class="mt-2">
           <div class="text-xs ui-muted mb-2">
             {{ post.user?.name ?? 'Unknown' }} reposted a comment
@@ -72,7 +72,7 @@
               {{ post.repost_of_comment.user?.name ?? 'Unknown' }}
             </div>
 
-            <div class="whitespace-pere-wrap text-sm ui-text">
+            <div class="whitespace-pre-wrap text-sm ui-text">
               {{ post.repost_of_comment.body }}
             </div>
 
@@ -82,15 +82,39 @@
           </NuxtLink>
         </div>
 
-        <div v-else-if="post.quote_body?.trim()" class="mt-2 whitespace-pre-wrap text-sm">
-          {{ post.quote_body }}
+        <!-- 2) Quote / Repost (with post.original_post) -->
+        <div v-else-if="post.original_post" class="mt-2 space-y-2">
+          <!-- 自分の本文（Quoteのコメント） -->
+          <div v-if="post.quote_body?.trim()" class="whitespace-pre-wrap text-sm">
+            {{ post.quote_body }}
+          </div>
+
+          <!-- Original post -->
+          <NuxtLink
+            :to="`/posts/${post.original_post.id}`"
+            class="block rounded-xl ui-border-all ui-bg p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition"
+            @click.stop
+          >
+            <div class="ui-muted text-xs mb-1">
+              {{ post.original_post.user?.name ?? 'Unknown' }}
+            </div>
+
+            <div v-if="post.original_post.title" class="font-semibold text-sm leading-snug">
+              {{ post.original_post.title }}
+            </div>
+
+            <div class="mt-1 whitespace-pre-wrap text-sm ui-text">
+              {{ post.original_post.body }}
+            </div>
+          </NuxtLink>
         </div>
 
-        <div v-else-if="!post.original_post" class="mt-2 whitespace-pre-wrap text-sm">
+        <!-- 3) Normal -->
+        <div v-else class="mt-2 whitespace-pre-wrap text-sm">
           {{ post.body }}
         </div>
-      </p>
-
+      </div>
+      
       <!-- topic-->
       <div v-if="post.topic" class="mt-2">
         <button
@@ -99,25 +123,25 @@
         >
           #{{ post.topic }}
         </button>
-      </div>
+      </div>    
     </div>
-      <ActionBar
-        :is-liked="post.is_liked"
-        :likes-count="post.likes_count ?? 0"
-        :comments-count="post.comments_count ?? 0"
-        :reposts-count="post.reposts_count ?? 0"
-        :is-bookmarked="isBookmarked"
-        :show-repost-button="true"
-        :repost-disabled="false"
-        @like="onClickLike"
-        @comment="emit('toggle-comment', post.id)"
-        @repost="() => openPost(post)"
-        @bookmark="ToggleBookmark"
-      />
-      <!-- PostCard枠内に差し込み -->
-      <div class="mt-3">
-        <slot name="below-actions" />
-      </div>
+    <ActionBar
+      :is-liked="post.is_liked"
+      :likes-count="post.likes_count ?? 0"
+      :comments-count="post.comments_count ?? 0"
+      :reposts-count="post.reposts_count ?? 0"
+      :is-bookmarked="isBookmarked"
+      :show-repost-button="true"
+      :repost-disabled="false"
+      @like="onClickLike"
+      @comment="emit('toggle-comment', post.id)"
+      @repost="() => openPost(post)"
+      @bookmark="ToggleBookmark"
+    />
+    <!-- PostCard枠内に差し込み -->
+    <div class="mt-3">
+      <slot name="below-actions" />
+    </div>
   </div>
 </template>
 
@@ -141,6 +165,7 @@ const toggleMenu = () => {
 const onDelete = () => {
   emit('delete', props.post.id)
 }
+
 // Emit
 const emit = defineEmits<{
   (e: 'delete', postId: number): void

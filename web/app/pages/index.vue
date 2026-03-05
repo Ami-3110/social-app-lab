@@ -43,7 +43,7 @@
               <PostCard
                 :post="post"
                 :show-menu="true"
-                @toggle-like="posts.toggleLike"
+                @togglelike="onToggleLike"
                 @toggle-comment="onToggleComment"
                 @bookmark-changed="onBookmarkChanged"
                 @delete="onDelete"
@@ -51,12 +51,21 @@
               >
                 <template #below-actions>
                   <!-- posted comment -->
-                  <CommentCard
-                    v-if="justPostedComment?.postId === post.id"
-                    :comment="justPostedComment.comment"
-                    :me-id="myUserId"
-                    variant="compact"
-                  />
+                  <div
+                    v-if="jp && jp.postId === post.id"
+                    class="mt-3"
+                    @click.stop
+                  >
+                    <CommentCard
+                      :comment="jp.comment"
+                      :me-id="myUserId"
+                      variant="compact"
+                      @like="onClickCommentLike"
+                      @bookmark="onClickCommentBookmark"
+                      @comment="() => goToPostDetail(post.id)"
+                      @repost="openComment"
+                    />
+                  </div>
                   <!-- comment form -->
                   <div v-if="activeCommentPostId === post.id" class="mt-3">
                     <textarea
@@ -124,13 +133,14 @@ definePageMeta({
 })
 
 import type { Comment } from '~/types/Comment'
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
 import { usePosts } from '~/composables/usePosts'
 import type { Post } from '~/types/Post'
 import { useAuthState } from '~/composables/useAuth'
 
 const { user } = useAuthState()
 const myUserId = computed(() => user.value?.id ?? null)
+const jp = computed(() => justPostedComment.value) // alias
 
 type TimelineTab = 'All' | 'Following' | 'For you' | 'Topic'
 const activeTab = ref<TimelineTab>('All')
@@ -149,9 +159,17 @@ const preserveScroll = async (fn: () => Promise<void>) => {
   await nextTick()
   window.scrollTo({ top: y })
 }
+const onToggleLike = async (postId: number, nextLiked: boolean) => {
+  await preserveScroll(async () => {
+    await $apiFetch(`/posts/${postId}/like`, {
+      method: nextLiked ? 'POST' : 'DELETE',
+    })
+    await refresh()
+  })
+}
 
 // bookmark
-const onBookmarkChanged = async () => {
+const onBookmarkChanged = async (_payload: { postId: number; isBookmarked: boolean }) => {
   await preserveScroll(async () => {
     await refresh()
   })
@@ -159,7 +177,6 @@ const onBookmarkChanged = async () => {
 
 // comment
 const commentBodies = ref<Record<number, string>>({})
-
 const activeCommentPostId = ref<number | null>(null)
 
   //comment form open/close
@@ -186,6 +203,46 @@ const submitComment = async (postId: number) => {
 }
 
 // Repost / Quote
-const { openPost } = useRepostModal()
+const { openPost, openComment } = useRepostModal()
 
+
+// Parent comment handler
+const goToPostDetail = (postId: number) => navigateTo(`/posts/${postId}`)
+
+// comment like
+
+const onClickCommentLike = async (comment: Comment) => {
+  const curr = Number(comment.is_liked ?? 0) === 1
+  const nextLiked = !curr
+
+  // （オプション）まず見た目を即反映：jp.comment が対象なら直接更新
+  if (jp.value?.comment?.id === comment.id) {
+    jp.value.comment.is_liked = nextLiked
+    jp.value.comment.likes_count = Number(jp.value.comment.likes_count ?? 0) + (nextLiked ? 1 : -1)
+  }
+
+  await preserveScroll(async () => {
+    await $apiFetch(`/comments/${comment.id}/like`, {
+      method: nextLiked ? 'POST' : 'DELETE',
+    })
+    await refresh()
+  })
+}
+
+// comment bookmark
+const onClickCommentBookmark = async (comment: Comment) => {
+  const curr = Number(comment.is_bookmarked ?? 0) === 1
+  const nextBookmarked = !curr
+
+  if (jp.value?.comment?.id === comment.id) {
+    jp.value.comment.is_bookmarked = nextBookmarked
+  }
+
+  await preserveScroll(async () => {
+    await $apiFetch(`/comments/${comment.id}/bookmark`, {
+      method: nextBookmarked ? 'POST' : 'DELETE',
+    })
+    await refresh()
+  })
+}
 </script>

@@ -1,4 +1,4 @@
-// app/composables/useAuth.ts
+// ~/composables/useAuth.ts
 import type { User } from '~/types/User'
 
 const TOKEN_KEY = 'auth_token'

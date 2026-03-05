@@ -1,4 +1,4 @@
-// composables/usePostsApi.ts
+// ~/composables/usePostsApi.ts
 
 export const usePostsApi = () => {
     const { $apiFetch } = useNuxtApp()
