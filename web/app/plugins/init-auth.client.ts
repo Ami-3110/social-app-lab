@@ -4,6 +4,9 @@ import { initAuth } from '~/composables/useAuth'
 export default defineNuxtPlugin(async () => {
   console.log('[init-auth plugin] start')
 
+  // ✅ localStorage → useState(token) に復元
+  restoreToken()
+
   // 起動時に1回だけ：ログイン状態の復元（Cookie→me）
   try {
     await initAuth()

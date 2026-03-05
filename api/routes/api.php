@@ -14,21 +14,24 @@ use App\Http\Controllers\Api\UserFollowListController;
 use App\Http\Controllers\Api\CommentLikeController;
 use App\Http\Controllers\Api\CommentBookmarkController;
 use App\Http\Controllers\Api\CommentRepostController;
+use App\Http\Controllers\Api\MeController;
 
 
 // 動作確認用（開発中は残す）
 Route::get('/ping', function () {
     return ['message' => 'pong'];
 });
+
 // 登録
 Route::post('register', [AuthController::class, 'register']);
-
 // ログイン
 Route::post('/login', [AuthController::class, 'login']);
 
 // ログイン中ユーザー（Sanctum 認証必須）
-Route::middleware('auth:sanctum')->get('/me', function () {
-    return auth()->user(); //動作上問題ないエラー
+Route::middleware('auth:sanctum')->group(function () {
+  Route::get('/me', [MeController::class, 'show']);
+  Route::patch('/me/profile', [MeController::class, 'updateProfile']);
+  Route::post('/me/avatar', [MeController::class, 'uploadAvatar']);
 });
 
 Route::middleware('auth:sanctum')->get('/protected', function (Request $request) {
@@ -94,6 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Mypage liked tab
     Route::get('/users/{user}/liked-posts', [UserController::class, 'likedPosts']);
+    //Mypage bio
+    Route::get('/me', [MeController::class, 'show']);
+    // Mypage bio edit
+    Route::patch('/me/profile', [MeController::class, 'updateProfile']);
+    //Mypage bio post
+    Route::post('/me/avatar', [MeController::class, 'uploadAvatar']);
 
     //------- Action to COMMENT -------
     // Comment like store

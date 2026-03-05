@@ -32,7 +32,7 @@
             <span :class="navClass(isActive)">🔖 <span class="ml-2">Saved</span></span>
           </NuxtLink>
 
-          <NuxtLink to="/profile" v-slot="{ isActive }" class="block">
+          <NuxtLink :to="myPageTo" v-slot="{ isActive }" class="block">
             <span :class="navClass(isActive)">👤 <span class="ml-2">My page</span></span>
           </NuxtLink>
 
@@ -94,7 +94,11 @@
 
 
 <script setup lang="ts">
-import { logout } from '~/composables/useAuth'
+import { onBeforeUnmount, onMounted, ref, computed } from 'vue'
+import { useAuthState, logout } from '~/composables/useAuth'
+
+const { user } = useAuthState()
+const myPageTo = computed(() => user.value?.id ? `/users/${user.value.id}` : '/login')
 
 const navClass = (active: boolean) => {
   return [
@@ -108,8 +112,6 @@ const navClass = (active: boolean) => {
 const onLogout = async () => {
   await logout()
 }
-
-import { onBeforeUnmount, onMounted, ref, computed } from 'vue'
 
 const menuOpen = ref(false)
 const menuRoot = ref<HTMLElement | null>(null)
@@ -155,5 +157,4 @@ const onLogoutFromMenu = async () => {
   menuOpen.value = false
   await onLogout()
 }
-
 </script>

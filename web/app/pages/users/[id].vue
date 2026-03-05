@@ -1,15 +1,27 @@
 <!-- pages/users/[id].vue -->
 <template>
   <main class="p-6 max-w-xl mx-auto space-y-6 ui-bg ui-text min-h-screen">
+    <!-- Invalid param guard -->
+    <div v-if="userId == null" class="text-red-600">
+      Invalid user id.
+    </div>
     <!-- Loading / Error -->
-    <div v-if="pending" class="ui-muted">Loading...</div>
+    <div v-else-if="pending" class="ui-muted">Loading...</div>
     <div v-else-if="error" class="text-red-600">Failed to load user.</div>
 
     <section v-else-if="profile" class="space-y-4">
       <!-- Header -->
       <header class="flex items-center gap-4">
-        <div class="h-12 w-12 rounded-full ui-border-all flex items-center justify-center text-lg font-bold">
-          {{ (profile.name ?? 'U').slice(0,1).toUpperCase() }}
+        <div class="h-12 w-12 rounded-full ui-border-all overflow-hidden flex items-center justify-center">
+          <img
+            v-if="profile.avatar_url"
+            :src="profile.avatar_url"
+            class="h-full w-full object-cover"
+            alt="avatar"
+          />
+          <div v-else class="text-lg font-bold">
+            {{ (profile.name ?? 'U').slice(0,1).toUpperCase() }}
+          </div>
         </div>
 
         <div class="flex-1 min-w-0">
@@ -26,19 +38,19 @@
 
       <!-- Buttons row -->
       <section class="flex gap-2">
-        <!-- own -->
+        <!-- Edit bio -->
         <button
           v-if="isMe"
           type="button"
           class="flex-1 rounded-full px-4 py-2 text-sm ui-border-all ui-bg hover:opacity-90"
-          @click="onEditProfile"
+          @click="isEditOpen = true"
         >
           Edit profile
         </button>
 
         <!-- Following -->
         <button
-          v-else
+          v-if="!isMe"
           type="button"
           class="flex-1 rounded-full px-4 py-2 text-sm ui-border-all ui-bg hover:opacity-90"
           :disabled="busy"
@@ -46,8 +58,15 @@
         >
           {{ profile.is_following ? 'Unfollow' : 'Follow' }}
         </button>
+        
+        <ProfileEditModal
+          v-if="isEditOpen"
+          :initial-bio="profile.bio ?? ''"
+          @close="isEditOpen = false"
+          @saved="onProfileSaved"
+        />
 
-        <!-- Follower -->
+        <!-- Following / Follower -->
         <button
           type="button"
           class="flex-1 rounded-full px-4 py-2 text-sm ui-border-all ui-bg hover:opacity-90"
@@ -121,12 +140,15 @@ import { useAuthState } from '~/composables/useAuth'
 import { useFollow } from '~/composables/useFollow'
 import type { Post } from '~/types/Post'
 import type { Comment } from '~/types/Comment'
+import ProfileEditModal from '~/components/ProfileEditModal.vue'
 
 type Profile = {
   id: number
   name: string
   email?: string
   bio?: string
+  avatar_path?: string | null
+  avatar_url?: string | null
   is_following?: boolean
   following_count?: number
   followers_count?: number
@@ -137,16 +159,39 @@ const route = useRoute()
 const { user: me } = useAuthState()
 const { follow, unfollow } = useFollow()
 
-const userId = computed(() => Number(route.params.id))
+const userId = computed<number | null>(() => {
+  const raw = route.params.id
+  // params は string | string[] | undefined があり得る
+  const s = Array.isArray(raw) ? raw[0] : raw
+  const n = Number(s)
+  return Number.isFinite(n) ? n : null
+})
 
 const { data: profileRes, pending, error, refresh } = useAsyncData<{ data: Profile }>(
-  () => `user:${userId.value}`,
-  () => $apiFetch(`/users/${userId.value}`),
+  () => `user:${userId.value ?? 'invalid'}`,
+  () => {
+    if (userId.value == null) {
+      // ここで 404 叩かずに止める
+      return Promise.reject(new Error('Invalid user id'))
+    }
+    return $apiFetch(`/users/${userId.value}`)
+  },
   { watch: [userId] }
 )
 
 const profile = computed(() => profileRes.value?.data)
 const isMe = computed(() => Number(me.value?.id) === Number(profile.value?.id))
+
+const isEditOpen = ref(false)
+
+const onProfileSaved = async () => {
+  isEditOpen.value = false
+  await refresh() // profileRes の refresh（あなたの変数名に合わせて）
+}
+
+const avatarUrl = computed(() =>
+  profile.value?.avatar_path ? `${useRuntimeConfig().public.apiBase}/storage/${profile.value.avatar_path}` : null
+)
 
 const busy = ref(false)
 
