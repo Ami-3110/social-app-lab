@@ -38,7 +38,7 @@ class BookmarkController extends Controller
     $user = $request->user();
 
     $posts = $user->bookmarks()
-      ->with('user:id,name')
+      ->with('user:id,name,avatar_path')
       ->withCount([
         'bookmarkedBy as is_bookmarked' => function ($q) use ($user) {
           $q->where('user_id', $user->id);

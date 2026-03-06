@@ -8,7 +8,7 @@ export type Post = {
   topic?: string
   body: string
 
-  user: { id: number; name: string }
+  user: PublicUser
 
   repost_of_post_id?: number | null
   quote_body?: string | null

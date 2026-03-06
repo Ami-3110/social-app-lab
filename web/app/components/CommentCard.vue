@@ -2,18 +2,31 @@
 <template>
   <div class="py-3">
     <!-- header row -->
-    <!--<div v-if="comment.parent" class="mb-2 text-xs ui-text opacity-70">
-      Replying to {{ comment.parent.user.name }}: {{ comment.parent.body }}
-    </div>-->
-
     <div class="flex items-start justify-between gap-2">
       <p class="text-xs ui-muted flex items-center gap-2">
-        <span
-          class="inline-flex h-7 w-7 items-center justify-center rounded-full ui-border-all ui-text text-[11px] font-bold"
+        <NuxtLink
+          :to="`/users/${comment.user?.id}`"
+          @click.stop
+          class="inline-flex h-7 w-7 items-center justify-center rounded-full overflow-hidden ui-border-all ui-text text-[11px] font-bold"
         >
-          {{ (comment.user?.name ?? 'U').slice(0,1).toUpperCase() }}
-        </span>
-        <span>{{ comment.user?.name }}</span>
+          <img
+            v-if="comment.user?.avatar_url"
+            :src="comment.user.avatar_url"
+            class="h-full w-full object-cover"
+            alt="avatar"
+          />
+          <span v-else>
+            {{ (comment.user?.name ?? 'U').slice(0,1).toUpperCase() }}
+          </span>
+        </NuxtLink>
+
+        <NuxtLink
+          :to="`/users/${comment.user?.id}`"
+          @click.stop
+          class="hover:underline"
+        >
+          {{ comment.user?.name }}
+        </NuxtLink>
         <span>{{ new Date(comment.created_at).toLocaleString() }}</span>
       </p>
 

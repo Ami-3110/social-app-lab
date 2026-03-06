@@ -27,7 +27,9 @@ class UserController extends Controller
               'id' => $user->id,
               'name' => $user->name,
               'email'=> $me && $me->id === $user->id ? $user->email : null,
-
+              'bio' => $user->bio,
+              'avatar_path' => $user->avatar_path,
+              'avatar_url' => $user->avatar_url,
               'is_following' => $isFollowing,
               'following_count' => $user->following_count,
               'followers_count' => $user->followers_count,
@@ -41,11 +43,11 @@ class UserController extends Controller
 
     $comments = Comment::query()
       ->with([
-        'user:id,name',
+        'user:id,name,avatar_path',
 
         // 親post（PostCardに必要な情報）
         'post' => function ($q) use ($meId) {
-          $q->with(['user:id,name'])
+          $q->with(['user:id,name,avatar_path'])
             ->withCount(['likes', 'comments', 'reposts'])
             ->withExists([
               'likes as is_liked' => fn($qq) => $qq->where('user_id', $meId),
@@ -66,7 +68,7 @@ class UserController extends Controller
     $meId = Auth::id();
 
     $posts = Post::query()
-      ->with(['user:id,name'])
+      ->with(['user:id,name,avatar_path'])
 
       // counts（ActionBar用）
       ->withCount(['likes', 'comments', 'reposts'])

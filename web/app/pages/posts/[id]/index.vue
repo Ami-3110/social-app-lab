@@ -20,26 +20,43 @@
       <!-- 本文 -->
       <div v-else-if="post" class="space-y-4">
 
-        <!-- タイトル & メニュー -->
+        <!-- Post -->
         <header class="flex items-start justify-between">
-          <!-- 左 -->
           <div class="space-y-2">
             <h1 class="text-xl font-bold leading-snug">
               {{ post.title }}
             </h1>
 
             <p class="text-xs ui-muted flex items-center gap-2">
-              <span
-                class="inline-flex h-7 w-7 items-center justify-center rounded-full ui-border-all ui-text text-[11px] font-bold"
+              <NuxtLink
+                :to="`/users/${post.user?.id}`"
+                @click.stop
+                class="inline-flex h-7 w-7 items-center justify-center rounded-full overflow-hidden ui-border-all ui-text text-[11px] font-bold"
               >
-                {{ (post.user?.name ?? 'U').slice(0,1).toUpperCase() }}
-              </span>
-              <span>{{ post.user?.name }}</span>
+                <img
+                  v-if="post.user?.avatar_url"
+                  :src="post.user.avatar_url"
+                  class="h-full w-full object-cover"
+                  alt="avatar"
+                />
+                <span v-else>
+                  {{ (post.user?.name ?? 'U').slice(0,1).toUpperCase() }}
+                </span>
+              </NuxtLink>
+
+              <NuxtLink
+                :to="`/users/${post.user?.id}`"
+                @click.stop
+                class="hover:underline"
+              >
+                {{ post.user?.name }}
+              </NuxtLink>
+
               <span>{{ new Date(post.created_at).toLocaleString() }}</span>
             </p>
           </div>
 
-          <!-- 右：3点メニュー -->
+          <!-- Menu -->
           <div class="relative">
             <button
               @click="toggleMenu"

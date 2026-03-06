@@ -3,12 +3,12 @@ export type User = {
     id: number
     name: string
     email: string
-    image?: string | null
+    avator_url: string | null
     role?: string | null
 }
 
 export type PublicUser = {
     id: number
     name: string
-    image?: string | null
+    avatar_url?: string | null
 }

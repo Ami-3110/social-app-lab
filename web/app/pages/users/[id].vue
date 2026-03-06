@@ -14,8 +14,8 @@
       <header class="flex items-center gap-4">
         <div class="h-12 w-12 rounded-full ui-border-all overflow-hidden flex items-center justify-center">
           <img
-            v-if="profile.avatar_url"
-            :src="profile.avatar_url"
+            v-if="avatarUrl"
+            :src="avatarUrl"
             class="h-full w-full object-cover"
             alt="avatar"
           />
@@ -189,9 +189,11 @@ const onProfileSaved = async () => {
   await refresh() // profileRes の refresh（あなたの変数名に合わせて）
 }
 
-const avatarUrl = computed(() =>
-  profile.value?.avatar_path ? `${useRuntimeConfig().public.apiBase}/storage/${profile.value.avatar_path}` : null
-)
+const avatarUrl = computed(() => {
+  if (!profile.value?.avatar_url) return null
+  const v = encodeURIComponent(profile.value.avatar_path ?? '')
+  return `${profile.value.avatar_url}?v=${v}`
+})
 
 const busy = ref(false)
 

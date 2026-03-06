@@ -25,10 +25,10 @@ class PostController extends Controller
       $query = Post::query()
         ->latest()
         ->with([
-          'user:id,name',
-          'originalPost.user:id,name',
-          'repostOfComment.user:id,name',
-          'repostOfComment.post.user:id,name',
+          'user:id,name,avatar_path',
+          'originalPost.user:id,name,avatar_path',
+          'repostOfComment.user:id,name,avatar_path',
+          'repostOfComment.post.user:id,name,avatar_path',
         ])
         ->withCount([
           'likes',
@@ -92,8 +92,8 @@ class PostController extends Controller
       $me = $request->user();
 
         $post->load([
-          'user:id,name',
-          'originalPost.user:id,name',
+          'user:id,name,avatar_path',
+          'originalPost.user:id,name,avatar_path',
         ]);
         $post->loadCount([
           'likes',
@@ -123,7 +123,7 @@ class PostController extends Controller
             'topic' => $data['topic'] ?? null,
         ]);
 
-        return $post->load('user:id,name');
+        return $post->load('user:id,name,avatar_path');
     }
 
     public function destroy(Request $request, Post $post)

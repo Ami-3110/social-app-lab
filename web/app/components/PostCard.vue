@@ -6,12 +6,30 @@
       <!-- 上段：投稿者情報 -->
       <div class="flex items-start justify-between">
         <div class="flex items-start gap-3 flex-1">
-          <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-sm font-bold">
-            {{ post.user?.name?.slice(0,1).toUpperCase() }}
-          </div>
+          <NuxtLink
+            :to="`/users/${post.user?.id}`"
+            @click.stop
+            class="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-sm font-bold"
+          >
+            <img
+              v-if="post.user?.avatar_url"
+              :src="post.user.avatar_url"
+              class="h-full w-full object-cover"
+              alt="avatar"
+            />
+            <span v-else>
+              {{ post.user?.name?.slice(0,1).toUpperCase() }}
+            </span>
+          </NuxtLink>
 
           <div class="flex flex-col">
-            <span class="font-semibold ui-text">{{ post.user?.name ?? 'Unknown' }}</span>
+            <NuxtLink
+              :to="`/users/${post.user?.id}`"
+              @click.stop
+              class="font-semibold ui-text hover:underline"
+            >
+              {{ post.user?.name ?? 'Unknown' }}
+            </NuxtLink>
             <span class="text-xs ui-muted">
               {{ new Date(post.created_at).toLocaleString() }}
             </span>
@@ -114,7 +132,7 @@
           {{ post.body }}
         </div>
       </div>
-      
+
       <!-- topic-->
       <div v-if="post.topic" class="mt-2">
         <button

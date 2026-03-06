@@ -19,8 +19,8 @@ class PostCommentController extends Controller
 
     $comments = $post->comments()
       ->with([
-        'user:id,name',
-        'parent.user:id,name'
+        'user:id,name,avatar_path',
+        'parent.user:id,name,avatar_path'
       ])
       ->withCount([
         'likes',
@@ -102,8 +102,8 @@ class PostCommentController extends Controller
 
       // 返却用に必要リレーションをロード
       $comment->load([
-        'user:id,name,image', // PublicUser相当
-        'parent.user:id,name,image',
+        'user:id,name,avatar_path', // PublicUser相当
+        'parent.user:id,name,avatar_path',
       ]);
 
       // is_liked / is_bookmarked / count系をここで付与するならここで
@@ -125,7 +125,7 @@ class PostCommentController extends Controller
     ]);
 
     $comment->update(['body' => $data['body']]);
-    $comment->load('user:id,name');
+    $comment->load('user:id,name,avatar_path');
 
     return response()->json([
       'data' => $this->commentResource($comment, $request->user()->id),
