@@ -162,8 +162,6 @@ const onBookmarkChanged = async () => {
     await refreshPosts()
   })
 }
-
-// Repost / Quote
 const { openPost } = useRepostModal()
 
 </script>

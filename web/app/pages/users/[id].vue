@@ -30,7 +30,7 @@
         </div>
       </header>
 
-      <!-- Bio（今は仮。後でAPIにbio追加） -->
+      <!-- Bio -->
       <section class="rounded-xl ui-border-all ui-bg p-4 text-sm whitespace-pre-wrap">
         <p v-if="profile.bio?.trim()">{{ profile.bio }}</p>
         <p v-else class="ui-muted">Add a bio to your profile.</p>
@@ -62,6 +62,8 @@
         <ProfileEditModal
           v-if="isEditOpen"
           :initial-bio="profile.bio ?? ''"
+          :initial-avatar-url="avatarUrl"
+          :initial-name="profile?.name ?? ''"
           @close="isEditOpen = false"
           @saved="onProfileSaved"
         />

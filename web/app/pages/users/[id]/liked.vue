@@ -13,19 +13,57 @@
         <PostCard :post="post" :show-menu="true" />
       </li>
     </ul>
+
+    <!-- Pagination -->
+    <nav
+      v-if="data && posts.length > 0"
+      class="mt-10 flex items-center justify-center gap-8"
+    >
+      <button
+        :disabled="!data.prev_page_url"
+        @click="go(data.current_page - 1)"
+      >
+        Prev
+      </button>
+
+      <span>{{ data.current_page }} / {{ data.last_page }}</span>
+
+      <button
+        :disabled="!data.next_page_url"
+        @click="go(data.current_page + 1)"
+      >
+        Next
+      </button>
+    </nav>
   </div>
 </template>
 
- <script setup lang="ts">
+<script setup lang="ts">
 definePageMeta({ layout: 'app', middleware: 'auth' })
 
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
+const router = useRouter()
 const userId = Number(route.params.id)
 
-const { data, pending, error } = await useUserLikedPosts(userId)
+const page = ref(Number(route.query.page ?? 1))
 
+const { data, pending, error } = await useUserLikedPosts(userId, page)
 const posts = computed(() => data.value?.data ?? [])
+
+function go(nextPage: number) {
+  if (!data.value) return
+  if (nextPage < 1 || nextPage > data.value.last_page) return
+
+  page.value = nextPage
+
+  router.push({
+    query: {
+      ...route.query,
+      page: String(nextPage),
+    },
+  })
+}
 </script>

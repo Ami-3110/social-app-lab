@@ -1,5 +1,5 @@
 <!-- ~/components/ProfileEditModal.vue -->
- <template>
+<template>
   <div
     class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
     @click.self="emit('close')"
@@ -11,11 +11,39 @@
       </div>
 
       <!-- avatar -->
-      <div class="space-y-2">
+      <div class="space-y-3">
         <div class="text-sm font-medium">Avatar</div>
-        <input type="file" accept="image/*" @change="onPickFile" />
-        <div v-if="previewUrl" class="mt-2">
-          <img :src="previewUrl" class="h-20 w-20 rounded-full object-cover ui-border-all" alt="preview" />
+
+        <div class="flex items-center gap-4">
+          <div
+            class="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full ui-border-all ui-muted"
+          >
+            <img
+              v-if="displayAvatarUrl"
+              :src="displayAvatarUrl"
+              class="h-full w-full object-cover"
+              alt="avatar preview"
+            />
+            <span v-else class="text-2xl font-semibold">
+              {{ avatarInitial }}
+            </span>
+          </div>
+
+          <div class="space-y-2">
+            <input type="file" accept="image/*" @change="onPickFile" />
+            <p class="text-xs ui-muted">
+              JPG, PNG, WEBP など
+            </p>
+
+            <button
+              v-if="canRemoveAvatar"
+              type="button"
+              class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
+              @click="onRemoveAvatar"
+            >
+              Remove avatar
+            </button>
+          </div>
         </div>
       </div>
 
@@ -41,7 +69,7 @@
 
         <button
           type="button"
-          class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
+          class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
           :disabled="busy"
           @click="save"
         >
@@ -53,10 +81,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from 'vue'
+import { computed, onBeforeUnmount, ref } from 'vue'
 
 const props = defineProps<{
   initialBio: string
+  initialAvatarUrl?: string | null
+  initialName?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -69,29 +99,67 @@ const { $apiFetch } = useNuxtApp()
 const bio = ref(props.initialBio ?? '')
 const file = ref<File | null>(null)
 const previewUrl = ref<string | null>(null)
+const removeAvatar = ref(false)
 const busy = ref(false)
+
+const displayAvatarUrl = computed(() => {
+  if (removeAvatar.value) return null
+  if (previewUrl.value) return previewUrl.value
+  if (props.initialAvatarUrl) return props.initialAvatarUrl
+  return null
+})
+
+const avatarInitial = computed(() => {
+  return props.initialName?.trim()?.charAt(0) || '?'
+})
+
+const canRemoveAvatar = computed(() => {
+  return !!props.initialAvatarUrl || !!previewUrl.value
+})
+
+const clearPreviewUrl = () => {
+  if (previewUrl.value) {
+    URL.revokeObjectURL(previewUrl.value)
+    previewUrl.value = null
+  }
+}
 
 const onPickFile = (e: Event) => {
   const input = e.target as HTMLInputElement
   const f = input.files?.[0] ?? null
-  file.value = f
 
-  // preview
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+  file.value = f
+  removeAvatar.value = false
+
+  clearPreviewUrl()
   previewUrl.value = f ? URL.createObjectURL(f) : null
 }
 
+const onRemoveAvatar = () => {
+  removeAvatar.value = true
+  file.value = null
+  clearPreviewUrl()
+}
+
 onBeforeUnmount(() => {
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)
+  clearPreviewUrl()
 })
 
 const save = async () => {
   if (busy.value) return
   busy.value = true
-  try {
-    await $apiFetch('/me/profile', { method: 'PATCH', body: { bio: bio.value } })
 
-    if (file.value) {
+  try {
+    await $apiFetch('/me/profile', {
+      method: 'PATCH',
+      body: { bio: bio.value },
+    })
+
+    if (removeAvatar.value) {
+      await $apiFetch('/me/avatar', {
+        method: 'DELETE',
+      })
+    } else if (file.value) {
       const fd = new FormData()
       fd.append('avatar', file.value)
       await $apiFetch('/me/avatar', { method: 'POST', body: fd })

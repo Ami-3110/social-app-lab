@@ -1,4 +1,6 @@
 // ~/composables/useUserLikedPosts.ts
+import { toValue } from 'vue'
+import type { MaybeRefOrGetter } from 'vue'
 import type { Post } from '~/types/Post'
 
 type Pagination<T> = {
@@ -11,11 +13,20 @@ type Pagination<T> = {
   next_page_url?: string | null
 }
 
-export const useUserLikedPosts = (userId: number) => {
+export const useUserLikedPosts = (
+  userId: number,
+  page: MaybeRefOrGetter<number> = 1
+) => {
   const { $apiFetch } = useNuxtApp()
 
   return useAsyncData<Pagination<Post>>(
-    () => `user:${userId}:liked-posts`,
-    () => $apiFetch(`/users/${userId}/liked-posts`)
+    () => `user:${userId}:liked-posts:${toValue(page)}`,
+    () =>
+      $apiFetch(`/users/${userId}/liked-posts`, {
+        params: { page: toValue(page) },
+      }),
+    {
+      watch: [() => toValue(page)],
+    }
   )
 }

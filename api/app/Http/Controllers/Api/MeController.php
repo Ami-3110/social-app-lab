@@ -34,19 +34,41 @@ class MeController extends Controller
     ]);
 
     $me = $request->user();
-
-    // 今は削除不要だけど、将来のために “上書き時だけ” 消しておくと綺麗
-    // if ($me->avatar_path) Storage::disk('public')->delete($me->avatar_path);
-    // if ($me->avatar_original_path) Storage::disk('public')->delete($me->avatar_original_path);
-
     $file = $request->file('avatar');
 
+    // 古い画像があれば削除
+    if ($me->avatar_path) {
+      Storage::disk('public')->delete($me->avatar_path);
+    }
+
+    if ($me->avatar_original_path && $me->avatar_original_path !== $me->avatar_path) {
+      Storage::disk('public')->delete($me->avatar_original_path);
+    }
     // 将来トリミング入れるので、元画像は original に保存
     $originalPath = $file->store('avatars/original', 'public');
 
     // 今はトリミング無し：表示用も同じファイルを使う（将来ここを cropped に差し替える）
     $me->avatar_original_path = $originalPath;
     $me->avatar_path = $originalPath;
+    $me->save();
+
+    return response()->json(['data' => $me]);
+  }
+
+  public function deleteAvatar(Request $request)
+  {
+    $me = $request->user();
+
+    if ($me->avatar_path) {
+      Storage::disk('public')->delete($me->avatar_path);
+    }
+
+    if ($me->avatar_original_path && $me->avatar_original_path !== $me->avatar_path) {
+      Storage::disk('public')->delete($me->avatar_original_path);
+    }
+
+    $me->avatar_path = null;
+    $me->avatar_original_path = null;
     $me->save();
 
     return response()->json(['data' => $me]);

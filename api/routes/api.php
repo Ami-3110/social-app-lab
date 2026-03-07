@@ -101,8 +101,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [MeController::class, 'show']);
     // Mypage bio edit
     Route::patch('/me/profile', [MeController::class, 'updateProfile']);
-    //Mypage bio post
+    //Mypage avator post
     Route::post('/me/avatar', [MeController::class, 'uploadAvatar']);
+    //Mypage avator 
+    Route::delete('/me/avatar', [MeController::class, 'deleteAvatar']);
+
 
     //------- Action to COMMENT -------
     // Comment like store
