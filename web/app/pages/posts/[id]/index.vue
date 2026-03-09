@@ -88,12 +88,12 @@
           </div>
         </header>
 
-        <!-- Delete エラー -->
+        <!-- Delete error -->
         <p v-if="deleteError" class="text-red-600 text-right text-sm">
           {{ deleteError }}
         </p>
 
-        <!-- 本文（浮かせない） -->
+        <!-- body -->
         <div
           class="p-2 rounded-xl ui-bg ui-border-all leading-relaxed whitespace-pre-wrap"
         >
@@ -122,6 +122,27 @@
               <div class="mt-1 whitespace-pre-wrap text-sm ui-muted">
                 {{ post.original_post.body }}
               </div>
+              <div
+                v-if="post.original_post.media?.[0]?.url"
+                class="mt-3 overflow-hidden rounded-xl ui-border-all"
+              >
+                <img
+                  :src="post.original_post.media[0].url"
+                  alt="Original post media"
+                  class="max-h-[28rem] w-full object-cover"
+                >
+              </div>
+            </div>
+          <!-- media -->
+          <div
+            v-if="firstMedia?.url"
+            class="mt-4 overflow-hidden rounded-2xl ui-border-all"
+          >
+            <img
+              :src="firstMedia.url"
+              alt="Post media"
+              class="max-h-[32rem] w-full object-cover"
+            >
           </div>
 
           <!-- Action Bar -->
@@ -235,6 +256,7 @@ const { data, pending, error, deleting, deleteError, deletePost, refresh } = use
 
 // ✅ showが { data: post } の形でも、旧形式（post直）でも両対応
 const post = computed<any>(() => (data.value as any)?.data ?? data.value)
+const firstMedia = computed(() => post.value?.media?.[0] ?? null)
 
 // ✅ コメント取得は route.params.id を使う（postが取れる前でも動く）
 const postId = computed(() => Number(route.params.id))

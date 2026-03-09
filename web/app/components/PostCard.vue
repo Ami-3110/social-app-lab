@@ -97,6 +97,17 @@
             <div v-if="post.repost_of_comment.post?.title" class="mt-2 text-xs ui-muted">
               on post: {{ post.repost_of_comment.post.title }}
             </div>
+
+            <div
+              v-if="repostCommentPostFirstMedia?.url"
+              class="mt-3 overflow-hidden rounded-xl ui-border-all"
+            >
+              <img
+                :src="repostCommentPostFirstMedia.url"
+                alt="Reposted comment post media"
+                class="max-h-[24rem] w-full object-cover"
+              >
+            </div>
           </NuxtLink>
         </div>
 
@@ -124,6 +135,17 @@
             <div class="mt-1 whitespace-pre-wrap text-sm ui-text">
               {{ post.original_post.body }}
             </div>
+
+            <div
+              v-if="originalPostFirstMedia?.url"
+              class="mt-3 overflow-hidden rounded-xl ui-border-all"
+            >
+              <img
+                :src="originalPostFirstMedia.url"
+                alt="Original post media"
+                class="max-h-[24rem] w-full object-cover"
+              >
+            </div>
           </NuxtLink>
         </div>
 
@@ -131,6 +153,18 @@
         <div v-else class="mt-2 whitespace-pre-wrap text-sm">
           {{ post.body }}
         </div>
+      </div>
+
+      <!-- media -->
+      <div
+        v-if="firstMedia?.url"
+        class="mt-3 overflow-hidden rounded-2xl ui-border-all"
+      >
+        <img
+          :src="firstMedia.url"
+          alt="Post media"
+          class="max-h-[28rem] w-full object-cover"
+        >
       </div>
 
       <!-- topic-->
@@ -172,6 +206,17 @@ const props = defineProps<{
   post: Post
   showMenu?: boolean
 }>()
+
+const firstMedia = computed(() => props.post.media?.[0] ?? null)
+
+const originalPostFirstMedia = computed(() => {
+  return props.post.original_post?.media?.[0] ?? null
+})
+
+const repostCommentPostFirstMedia = computed(() => {
+  return props.post.repost_of_comment?.post?.media?.[0] ?? null
+})
+
 // Computed
 const showMenu = computed(() => props.showMenu === true)
 // Menu 開閉

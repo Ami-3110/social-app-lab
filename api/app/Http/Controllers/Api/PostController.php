@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\PostMedia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PostController extends Controller
 {
@@ -27,9 +29,12 @@ class PostController extends Controller
         ->latest()
         ->with([
           'user:id,name,avatar_path',
+          'media',
           'originalPost.user:id,name,avatar_path',
+          'originalPost.media',
           'repostOfComment.user:id,name,avatar_path',
           'repostOfComment.post.user:id,name,avatar_path',
+          'repostOfComment.post.media',
         ])
         ->withCount([
           'likes',
@@ -86,16 +91,30 @@ class PostController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'body'  => ['required', 'string'],
             'topic' => ['nullable', 'string', 'max:100'],
+            'media' => ['nullable', 'file', 'image', 'max:5120'], // 5MB
         ]);
 
-        $post = Post::create([
+        $post = DB::transaction(function () use ($request, $data){
+          $post =Post::create([
             'user_id' => $request->user()->id,
             'title' => $data['title'],
             'body' => $data['body'],
             'topic' => $data['topic'] ?? null,
-        ]);
+          ]);
 
-        return response()->json($post, 201);
+          if ($request->hasFile('media')) {
+            $path = $request->file('media')->store('posts', 'public');
+
+            $post->media()->create([
+                'path' => $path,
+                'sort_order' => 0,
+            ]);
+          }
+
+          return $post;
+        });
+
+        return response()->json($post->load('media'), 201);
     }
 
     public function show(Request $request, Post $post)
@@ -104,7 +123,11 @@ class PostController extends Controller
 
         $post->load([
           'user:id,name,avatar_path',
+          'media',
           'originalPost.user:id,name,avatar_path',
+          'originalPost.media',
+          'repostOfComment.user:id,name,avatar_path',
+          'repostOfComment.post.media',
         ]);
         $post->loadCount([
           'likes',

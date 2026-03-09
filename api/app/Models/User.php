@@ -34,8 +34,9 @@ class User extends Authenticatable
         ];
     }
 
-    protected $appends = ['avatar_url'];
-
+    protected $appends = [
+      'avatar_url',
+      ];
 
     public function posts()
     {

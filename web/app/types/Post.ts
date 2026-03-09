@@ -2,11 +2,23 @@
 import type { PublicUser } from '~/types/User'
 import type { Comment } from '~/types/Comment'
 
+export type PostMedia = {
+  id: number
+  post_id: number
+  path: string
+  sort_order: number
+  url: string
+  created_at: string
+  updated_at: string
+}
+
 export type Post = {
   id: number
   title: string
   topic?: string
   body: string
+  
+  media?: PostMedia[]
 
   user: PublicUser
 

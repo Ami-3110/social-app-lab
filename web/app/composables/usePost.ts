@@ -1,66 +1,87 @@
 // ~/composables/usePost.ts
 import type { Post } from '~/types/Post'
 
+type CreatePostPayload = {
+  title: string
+  topic?: string
+  body: string
+  media?: File | null
+}
+
 export const usePost = (postId?: number | string) => {
-    const route = useRoute()
-    const { $apiFetch } = useNuxtApp()
+  const route = useRoute()
+  const { $apiFetch } = useNuxtApp()
 
-    const id = computed(() => postId ?? route.params.id)
+  const id = computed(() => postId ?? route.params.id)
 
-    // 1件取得（/posts/[id] 用）
-    const { data, pending, error, refresh } = useAsyncData<Post | null>(
-        () => `post:${id.value ?? ''}`,
-        async () => {
-        if (!id.value) return null
-        return await $apiFetch<Post>(`/posts/${id.value}`)
-        },
-        { default: () => null, watch: [id], server: false }
+  // 1件取得（/posts/[id] 用）
+  const { data, pending, error, refresh } = useAsyncData<Post | null>(
+    () => `post:${id.value ?? ''}`,
+    async () => {
+      if (!id.value) return null
+      return await $apiFetch<Post>(`/posts/${id.value}`)
+    },
+    { default: () => null, watch: [id], server: false }
+  )
+
+  // 共通 request ラッパ
+  async function request<T>(
+    fn: () => Promise<T>,
+    opts?: { loading?: Ref<boolean>; errorMsg?: Ref<string> }
+  ) {
+    const loading = opts?.loading
+    const errorMsg = opts?.errorMsg
+
+    if (loading) loading.value = true
+    if (errorMsg) errorMsg.value = ''
+
+    try {
+      return await fn()
+    } catch (err: any) {
+      console.error(err)
+      if (errorMsg) {
+        errorMsg.value =
+          err?.data?.message ??
+          'エラーが発生しました。時間をおいて再度お試しください。'
+      }
+      throw err
+    } finally {
+      if (loading) loading.value = false
+    }
+  }
+
+  // 作成
+  const creating = ref(false)
+  const createError = ref('')
+
+  const create = (payload: CreatePostPayload) =>
+    request(
+      async () => {
+        const fd = new FormData()
+        fd.append('title', payload.title)
+        fd.append('body', payload.body)
+
+        if (payload.topic?.trim()) {
+          fd.append('topic', payload.topic.trim())
+        }
+
+        if (payload.media) {
+          fd.append('media', payload.media)
+        }
+
+        return await $apiFetch<Post>('/posts', {
+          method: 'POST',
+          body: fd,
+        })
+      },
+      { loading: creating, errorMsg: createError }
     )
 
-    // 共通 request ラッパ
-    async function request<T>(
-        fn: () => Promise<T>,
-        opts?: { loading?: Ref<boolean>; errorMsg?: Ref<string> }
-    ) {
-        const loading = opts?.loading
-        const errorMsg = opts?.errorMsg
+  // 更新
+  const saving = ref(false)
+  const saveError = ref('')
 
-        if (loading) loading.value = true
-        if (errorMsg) errorMsg.value = ''
-
-        try {
-        return await fn()
-        } catch (err: any) {
-        console.error(err)
-        if (errorMsg) {
-            errorMsg.value =
-            err?.data?.message ??
-            'エラーが発生しました。時間をおいて再度お試しください。'
-        }
-        throw err
-        } finally {
-        if (loading) loading.value = false
-        }
-    }
-
-    // 作成
-    const creating = ref(false)
-    const createError = ref('')
-
-    const create = (payload: { title: string; topic?: string; body: string }) =>
-        request(
-          () => $apiFetch<Post>('/posts', {
-            method: 'POST',
-            body: payload,
-          }),
-        { loading: creating, errorMsg: createError }
-        )
-
-    // 更新
-    const saving = ref(false)
-    const saveError = ref('')
-
-    const update = async (payload: { title: string; topic?: string; body: string }) => {
+  const update = async (payload: { title: string; topic?: string; body: string }) => {
     if (!id.value) throw new Error('Post ID is missing')
 
     const res = await request(
@@ -68,20 +89,19 @@ export const usePost = (postId?: number | string) => {
         $apiFetch<Post>(`/posts/${id.value}`, {
           method: 'PUT',
           body: payload,
-      }),
-        { loading: saving, errorMsg: saveError }
+        }),
+      { loading: saving, errorMsg: saveError }
     )
 
-    await refreshNuxtData(`post:${id.value}`) // ← これ
+    await refreshNuxtData(`post:${id.value}`)
     return res
-    }
+  }
 
+  // 削除
+  const deleting = ref(false)
+  const deleteError = ref('')
 
-    // 削除
-    const deleting = ref(false)
-    const deleteError = ref('')
-
-    const deletePost = async () => {
+  const deletePost = async () => {
     if (!id.value) throw new Error('Post ID is missing')
 
     await request(
@@ -93,26 +113,25 @@ export const usePost = (postId?: number | string) => {
     )
 
     await navigateTo('/posts')
-}
+  }
 
+  return {
+    id,
+    data,
+    pending,
+    error,
+    refresh,
 
-    return {
-        id,
-        data,
-        pending,
-        error,
-        refresh,
+    create,
+    creating,
+    createError,
 
-        create,
-        creating,
-        createError,
+    update,
+    saving,
+    saveError,
 
-        update,
-        saving,
-        saveError,
-
-        deletePost,
-        deleting,
-        deleteError,
-    }
+    deletePost,
+    deleting,
+    deleteError,
+  }
 }

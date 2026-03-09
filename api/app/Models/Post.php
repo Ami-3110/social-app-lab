@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Testing\Fluent\Concerns\Has;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -60,6 +59,11 @@ class Post extends Model
   public function repostOfComment()
   {
     return $this->belongsTo(Comment::class, 'repost_of_comment_id');
+  }
+
+  public function media(): HasMany
+  {
+    return $this->hasMany(PostMedia::class)->orderBy('sort_order');
   }
 
 }
