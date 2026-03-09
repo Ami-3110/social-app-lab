@@ -8,13 +8,13 @@
         <TlTabsHeader v-model:activeTab="activeTab" />
       </header>
 
-      <!--トピックガード（作ったら削除）-->
-      <div
+      <!--Topic guard（don't forget adding "| 'Topic'" to script setup）-->
+      <!--<div
         v-if="activeTab === 'Topic' && !topic"
         class="py-10 text-center ui-muted"
       >
         Add <span class="font-semibold">?topic=laravel</span> to the URL to filter by topic.
-      </div>
+      </div>-->
 
       <!-- ローディング -->
       <div v-if="pending" class="space-y-4">
@@ -142,7 +142,7 @@ const { user } = useAuthState()
 const myUserId = computed(() => user.value?.id ?? null)
 const jp = computed(() => justPostedComment.value) // alias
 
-type TimelineTab = 'All' | 'Following' | 'For you' | 'Topic'
+type TimelineTab = 'All' | 'Following' | 'For you' 
 const activeTab = ref<TimelineTab>('All')
 
 const posts = usePosts({

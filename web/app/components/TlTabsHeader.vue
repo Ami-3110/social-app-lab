@@ -30,17 +30,17 @@
 
 
 <script setup lang="ts">
-const tabs = ['All', 'Following', 'For you', 'Topic'] as const
+const tabs = ['All', 'Following', 'For you'] as const
+//const tabs = ['All', 'Following', 'For you', 'Topic'] as const
 type Tab = typeof tabs[number]
-
 const activeTab = defineModel<Tab>('activeTab', { required: true })
 const router = useRouter()
 
 const onClickTab = (t: Tab) => {
-  if (t === 'Topic') {
+/*  if (t === 'Topic') {
     router.push('/search?mode=topic')
     return
-  }
+  }*/
   activeTab.value = t
 }
 </script>
