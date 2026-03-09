@@ -11,14 +11,15 @@ class PostController extends Controller
     public function index(Request $request)
     {
       $me = $request->user();
-      
-      if(!$me){
-        return response()->json(['message' => 'Unauthenticated.'],401);
+
+      if (!$me) {
+        return response()->json(['message' => 'Unauthenticated.'], 401);
       }
 
       $topic = $request->query('topic');
       $tab = $request->query('tab', 'All');
       $userId = $request->query('user_id');
+      $q = trim((string) $request->query('q', ''));
 
       $meId = $me->id;
 
@@ -36,34 +37,44 @@ class PostController extends Controller
           'reposts as reposts_count',
 
           'likedUsers as is_liked' =>
-          fn($q) => $q->where('user_id', $meId),
+          fn($q2) => $q2->where('user_id', $meId),
 
           'bookmarkedBy as is_bookmarked' =>
-          fn($q) => $q->where('user_id', $meId),
+          fn($q2) => $q2->where('user_id', $meId),
 
           'reposts as is_reposted' =>
-          fn($q) => $q->where('user_id', $meId),
+          fn($q2) => $q2->where('user_id', $meId),
         ])
 
         // Following
-        ->when($tab === 'Following', function ($q) use ($me) {
+        ->when($tab === 'Following', function ($query) use ($me) {
           $followingIds = $me->following()->select('users.id');
-          $q->whereIn('user_id', $followingIds);
+          $query->whereIn('user_id', $followingIds);
         })
 
         // Profile (User filter)
-        ->when($request->filled('user_id'), function ($q) use ($userId) {
-          $q->where('user_id', (int) $userId);
+        ->when($request->filled('user_id'), function ($query) use ($userId) {
+          $query->where('user_id', (int) $userId);
         })
 
         // topic
-        ->when($topic, function ($q) use ($topic) {
+        ->when($topic, function ($query) use ($topic) {
           $t = trim((string) $topic);
+
           if ($t === '' || $t === '__none__') {
-            $q->whereRaw('1 = 0');
+            $query->whereRaw('1 = 0');
             return;
           }
-          $q->where('topic', 'like', '%' . $t . '%');
+
+          $query->where('topic', 'like', '%' . $t . '%');
+        })
+
+        // keyword search
+        ->when($q !== '', function ($query) use ($q) {
+          $query->where(function ($sub) use ($q) {
+            $sub->where('body', 'like', '%' . $q . '%')
+              ->orWhere('topic', 'like', '%' . $q . '%');
+          });
         });
 
       return $query->paginate(10)->withQueryString();
@@ -134,6 +145,37 @@ class PostController extends Controller
         $post->delete();
 
         return response()->json(['message' => 'Post deleted']);
+    }
+
+    public function searchTopics(Request $request)
+    {
+      $me = $request->user();
+
+      if (!$me) {
+        return response()->json(['message' => 'Unauthenticated.'], 401);
+      }
+
+      $q = trim((string) $request->query('q', ''));
+
+      $query = Post::query()
+        ->select('topic')
+        ->whereNotNull('topic')
+        ->where('topic', '!=', '');
+
+      if ($q !== '') {
+        $query->where('topic', 'like', '%' . $q . '%');
+      }
+
+      $topics = $query
+        ->distinct()
+        ->orderBy('topic')
+        ->paginate(10)
+        ->through(fn($post) => [
+          'topic' => $post->topic,
+        ])
+        ->withQueryString();
+
+      return response()->json($topics);
     }
 }
 

@@ -88,4 +88,33 @@ class UserController extends Controller
 
     return response()->json($posts);
   }
+
+  public function search(Request $request)
+  {
+    $me = $request->user();
+
+    if (!$me) {
+      return response()->json(['message' => 'Unauthenticated.'], 401);
+    }
+
+    $q = trim((string) $request->query('q', ''));
+
+    $query = User::query()
+      ->select('id', 'name', 'bio', 'avatar_path')
+      ->withCount([
+        'following',
+        'followers',
+        'followers as is_following' => fn($sub) => $sub->whereKey($me->id),
+      ])
+      ->latest();
+
+    if ($q !== '') {
+      $query->where(function ($sub) use ($q) {
+        $sub->where('name', 'like', '%' . $q . '%')
+          ->orWhere('bio', 'like', '%' . $q . '%');
+      });
+    }
+
+    return $query->paginate(10)->withQueryString();
+  }
 }

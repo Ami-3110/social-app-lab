@@ -22,12 +22,12 @@ Route::get('/ping', function () {
     return ['message' => 'pong'];
 });
 
-// 登録
+// register
 Route::post('register', [AuthController::class, 'register']);
-// ログイン
+// login
 Route::post('/login', [AuthController::class, 'login']);
 
-// ログイン中ユーザー（Sanctum 認証必須）
+// User identify（Sanctum idetification）
 Route::middleware('auth:sanctum')->group(function () {
   Route::get('/me', [MeController::class, 'show']);
   Route::patch('/me/profile', [MeController::class, 'updateProfile']);
@@ -52,6 +52,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/posts/{post}', [PostController::class, 'update']);
     // Post destroy
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+
+    //------- Search -------
+    // User search
+    Route::get('/users/search', [UserController::class, 'search']);
+    // Topic search
+    Route::get('/topics/search', [PostController::class, 'searchTopics']);
 
     //------- Action to POST -------
     // Post bookmark index
@@ -94,6 +100,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Mypage comment tab
     Route::get('/users/{user}/comments', [UserController::class, 'comments']);
   // Mypage media tab
+
 
     // Mypage liked tab
     Route::get('/users/{user}/liked-posts', [UserController::class, 'likedPosts']);
