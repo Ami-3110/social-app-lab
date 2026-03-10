@@ -100,12 +100,12 @@
 
             <div
               v-if="repostCommentPostFirstMedia?.url"
-              class="mt-3 overflow-hidden rounded-xl ui-border-all"
+              class="mt-3 flex justify-center"
             >
               <img
                 :src="repostCommentPostFirstMedia.url"
                 alt="Reposted comment post media"
-                class="max-h-[24rem] w-full object-cover"
+                class="block w-full max-w-sm max-h-[18rem] rounded-2xl object-cover"
               >
             </div>
           </NuxtLink>
@@ -138,15 +138,15 @@
 
             <div
               v-if="originalPostFirstMedia?.url"
-              class="mt-3 overflow-hidden rounded-xl ui-border-all"
+              class="mt-3 flex justify-center"
             >
               <img
                 :src="originalPostFirstMedia.url"
                 alt="Original post media"
-                class="max-h-[24rem] w-full object-cover"
+                class="block w-full max-w-sm max-h-[18rem] rounded-2xl object-cover"
               >
             </div>
-          </NuxtLink>
+                      </NuxtLink>
         </div>
 
         <!-- 3) Normal -->
@@ -158,12 +158,12 @@
       <!-- media -->
       <div
         v-if="firstMedia?.url"
-        class="mt-3 overflow-hidden rounded-2xl ui-border-all"
+        class="mt-3 flex justify-center"
       >
         <img
           :src="firstMedia.url"
           alt="Post media"
-          class="max-h-[28rem] w-full object-cover"
+          class="block max-w-md max-h-[20rem] rounded-2xl object-cover"
         >
       </div>
 
