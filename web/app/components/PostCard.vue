@@ -156,14 +156,20 @@
       </div>
 
       <!-- media -->
-      <div
-        v-if="firstMedia?.url"
-        class="mt-3 flex justify-center"
-      >
+      <div v-if="mediaCount === 1" class="mt-3 flex justify-center">
         <img
-          :src="firstMedia.url"
+          :src="firstMedia?.url"
           alt="Post media"
-          class="block max-w-md max-h-[20rem] rounded-2xl object-cover"
+          class="block w-full max-w-md max-h-[20rem] rounded-2xl object-cover"
+        >
+      </div>
+      <div v-else-if="mediaCount > 1" class="mt-3 grid grid-cols-2 gap-2">
+        <img
+          v-for="media in mediaList"
+          :key="media.id"
+          :src="media.url"
+          alt="Post media"
+          class="block aspect-square w-full rounded-xl object-cover"
         >
       </div>
 
@@ -207,7 +213,9 @@ const props = defineProps<{
   showMenu?: boolean
 }>()
 
-const firstMedia = computed(() => props.post.media?.[0] ?? null)
+const mediaList = computed(() => props.post.media ?? [])
+const mediaCount = computed(() => mediaList.value.length)
+const firstMedia = computed(() => mediaList.value[0] ?? null)
 
 const originalPostFirstMedia = computed(() => {
   return props.post.original_post?.media?.[0] ?? null

@@ -134,14 +134,24 @@
               </div>
             </div>
           <!-- media -->
+          <div v-if="mediaCount === 1" class="mt-4 flex justify-center">
+            <img
+              :src="firstMedia?.url"
+              alt="Post media"
+              class="block w-full max-w-2xl max-h-[28rem] rounded-2xl object-cover"
+            >
+          </div>
+
           <div
-            v-if="firstMedia?.url"
-            class="mt-4 overflow-hidden rounded-2xl ui-border-all"
+            v-else-if="mediaCount > 1"
+            class="mt-4 grid grid-cols-2 gap-3"
           >
             <img
-              :src="firstMedia.url"
+              v-for="media in mediaList"
+              :key="media.id"
+              :src="media.url"
               alt="Post media"
-              class="max-h-[32rem] w-full object-cover"
+              class="block aspect-square w-full rounded-xl object-cover"
             >
           </div>
 
@@ -256,7 +266,10 @@ const { data, pending, error, deleting, deleteError, deletePost, refresh } = use
 
 // ✅ showが { data: post } の形でも、旧形式（post直）でも両対応
 const post = computed<any>(() => (data.value as any)?.data ?? data.value)
-const firstMedia = computed(() => post.value?.media?.[0] ?? null)
+  
+const mediaList = computed(() => post.value?.media ?? [])
+const mediaCount = computed(() => mediaList.value.length)
+const firstMedia = computed(() => mediaList.value[0] ?? null)
 
 // ✅ コメント取得は route.params.id を使う（postが取れる前でも動く）
 const postId = computed(() => Number(route.params.id))

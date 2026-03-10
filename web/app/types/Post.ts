@@ -5,7 +5,7 @@ import type { Comment } from '~/types/Comment'
 export type PostMedia = {
   id: number
   post_id: number
-  path: string
+  file_path: string
   sort_order: number
   url: string
   created_at: string
@@ -17,7 +17,7 @@ export type Post = {
   title: string
   topic?: string
   body: string
-  
+
   media?: PostMedia[]
 
   user: PublicUser

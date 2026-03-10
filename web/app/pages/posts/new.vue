@@ -59,20 +59,33 @@
 
           <input
             type="file"
-            accept="image/*"
+            accept="image/*" multiple
             @change="onPickMedia"
           >
 
-          <div v-if="previewUrl" class="pt-2">
+          <div v-if="previewUrls.length === 1" class="mt-3 flex justify-center">
             <img
-              :src="previewUrl"
+              :src="previewUrls[0]"
               alt="media preview"
-              class="max-h-80 w-auto rounded-xl ui-border-all object-cover"
-            >
+              class="block w-full max-w-md max-h-80 rounded-2xl object-cover"
+            />
+          </div>
+
+          <div
+            v-else-if="previewUrls.length > 1"
+            class="mt-3 grid grid-cols-2 gap-2"
+          >
+            <img
+              v-for="(url, index) in previewUrls"
+              :key="index"
+              :src="url"
+              alt="media preview"
+              class="block aspect-square w-full rounded-xl object-cover"
+            />
           </div>
 
           <button
-            v-if="mediaFile"
+            v-if="mediaFiles"
             type="button"
             class="rounded px-3 py-2 text-sm ui-border-all hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
             @click="clearMedia"
@@ -122,40 +135,40 @@ const router = useRouter()
 const title = ref('')
 const topic = ref('')
 const body = ref('')
-const mediaFile = ref<File | null>(null)
-const previewUrl = ref<string | null>(null)
+const mediaFiles = ref<File[]>([])
+const previewUrls = ref<string[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
 const okMsg = ref('')
 
 const { create } = usePost()
 
-const clearPreviewUrl = () => {
-  if (previewUrl.value) {
-    URL.revokeObjectURL(previewUrl.value)
-    previewUrl.value = null
+const clearPreviewUrls = () => {
+  for (const url of previewUrls.value) {
+    URL.revokeObjectURL(url)
   }
+  previewUrls.value = []
 }
 
 const onPickMedia = (e: Event) => {
   const input = e.target as HTMLInputElement
-  const file = input.files?.[0] ?? null
+  const files = Array.from(input.files ?? [])
 
-  mediaFile.value = file
-  clearPreviewUrl()
+  mediaFiles.value = files
+  clearPreviewUrls()
 
-  if (file) {
-    previewUrl.value = URL.createObjectURL(file)
+  if (files.length) {
+    previewUrls.value = files.map((file) => URL.createObjectURL(file))
   }
 }
 
 const clearMedia = () => {
-  mediaFile.value = null
-  clearPreviewUrl()
+  mediaFiles.value = []
+  clearPreviewUrls()
 }
 
 onBeforeUnmount(() => {
-  clearPreviewUrl()
+  clearPreviewUrls()
 })
 
 const submit = async () => {
@@ -173,7 +186,7 @@ const submit = async () => {
       title: trimmedTitle,
       body: trimmedBody,
       topic: trimmedTopic,
-      media: mediaFile.value,
+      media: mediaFiles.value,
     })
 
     okMsg.value = 'Created!'

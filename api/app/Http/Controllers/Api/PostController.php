@@ -91,7 +91,8 @@ class PostController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'body'  => ['required', 'string'],
             'topic' => ['nullable', 'string', 'max:100'],
-            'media' => ['nullable', 'file', 'image', 'max:5120'], // 5MB
+            'media' => ['nullable', 'array', 'max:4'],
+            'media.*' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
         ]);
 
         $post = DB::transaction(function () use ($request, $data){
@@ -103,14 +104,15 @@ class PostController extends Controller
           ]);
 
           if ($request->hasFile('media')) {
-            $path = $request->file('media')->store('posts', 'public');
+            foreach($request->file('media') as $index => $file){
+              $path = $file->store('posts', 'public');
 
-            $post->media()->create([
+              $post->media()->create([ 
                 'path' => $path,
-                'sort_order' => 0,
-            ]);
+                'sort_order' => $index,
+              ]);
+            }
           }
-
           return $post;
         });
 

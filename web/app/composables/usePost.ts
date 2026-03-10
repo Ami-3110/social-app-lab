@@ -54,28 +54,29 @@ export const usePost = (postId?: number | string) => {
   const creating = ref(false)
   const createError = ref('')
 
-  const create = (payload: CreatePostPayload) =>
-    request(
-      async () => {
-        const fd = new FormData()
-        fd.append('title', payload.title)
-        fd.append('body', payload.body)
+  const create = async (payload: {
+    title: string
+    body: string
+    topic?: string
+    media?: File[]
+  }) => {
+    const form = new FormData()
+    form.append('title', payload.title)
+    form.append('body', payload.body)
 
-        if (payload.topic?.trim()) {
-          fd.append('topic', payload.topic.trim())
-        }
+    if (payload.topic) {
+      form.append('topic', payload.topic)
+    }
 
-        if (payload.media) {
-          fd.append('media', payload.media)
-        }
+    for (const file of payload.media ?? []) {
+      form.append('media[]', file)
+    }
 
-        return await $apiFetch<Post>('/posts', {
-          method: 'POST',
-          body: fd,
-        })
-      },
-      { loading: creating, errorMsg: createError }
-    )
+    return await $apiFetch('/posts', {
+      method: 'POST',
+      body: form,
+    })
+  }
 
   // 更新
   const saving = ref(false)
