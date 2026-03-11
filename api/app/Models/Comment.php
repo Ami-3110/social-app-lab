@@ -58,8 +58,8 @@ class Comment extends Model
     return $this->hasMany(self::class, 'parent_id');
   }
 
-  public function reposts()
+  public function repostPosts()
   {
-    return $this->hasMany(CommentRepost::class);
+    return $this->hasMany(Post::class, 'repost_of_comment_id');
   }
 }

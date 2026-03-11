@@ -35,21 +35,6 @@ export const useComments = (opts: { refresh?: () => Promise<void> } = {}) => {
     }
   }
 
-  const toggleRepost = async (c: Comment) => {
-    const isOn = !!c.is_reposted
-    c.is_reposted = !isOn
-    c.reposts_count = Math.max(0, (c.reposts_count ?? 0) + (isOn ? -1 : 1))
-
-    try {
-      await $apiFetch(`/comments/${c.id}/repost`, { method: isOn ? 'DELETE' : 'POST' })
-      await refresh()
-    } catch (e) {
-      c.is_reposted = isOn
-      c.reposts_count = Math.max(0, (c.reposts_count ?? 0) + (isOn ? 1 : -1))
-      throw e
-    }
-  }
-
   const quote = async (comment: Comment, body: string) => {
     await $apiFetch(`/comments/${comment.id}/repost`, {
       method: 'POST',
@@ -58,5 +43,5 @@ export const useComments = (opts: { refresh?: () => Promise<void> } = {}) => {
     await refresh()
   }
 
-  return { toggleLike, toggleBookmark, toggleRepost, quote }
+  return { toggleLike, toggleBookmark, quote }
 }

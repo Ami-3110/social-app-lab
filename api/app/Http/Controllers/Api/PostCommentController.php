@@ -25,7 +25,7 @@ class PostCommentController extends Controller
       ->withCount([
         'likes',
         'replies',
-        'reposts',
+        'repostPosts as reposts_count',
         ])
       ->latest()
       ->paginate(20);
@@ -34,18 +34,20 @@ class PostCommentController extends Controller
     $comments->setCollection(
       $comments->getCollection()->map(function ($comment) use ($userId) {
         // Comment-like
-          $comment->is_liked = $userId
-          ? $comment->likes()->where('user_id', $userId)->exists()
-          : false;
+        $comment->is_liked = $userId
+        ? $comment->likes()->where('user_id', $userId)->exists()
+        : false;
 
-          // Comment-bookmark
-          $comment->is_bookmarked = $userId
-          ? $comment->bookmarks()->where('user_id', $userId)->exists()
-          : false;
+        // Comment-bookmark
+        $comment->is_bookmarked = $userId
+        ? $comment->bookmarks()->where('user_id', $userId)->exists()
+        : false;
 
         //comment-repost
         $comment->is_reposted = $userId
-          ? $comment->reposts()->where('user_id', $userId)->exists()
+          ? $comment->repostPosts()
+          ->where('user_id', $userId)
+          ->exists()
           : false;
 
         return $comment;
