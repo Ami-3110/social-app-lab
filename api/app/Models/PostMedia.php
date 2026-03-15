@@ -27,7 +27,7 @@ class PostMedia extends Model
   public function getUrlAttribute(): ?string
   {
     return $this->path
-      ? Storage::disk('public')->url($this->path)
+      ? Storage::disk('public')->url($this->path) //error ignore
       : null;
   }
 }

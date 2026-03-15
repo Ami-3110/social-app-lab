@@ -87,7 +87,7 @@
 
       </section>
 
-      <!-- Tabs（中身は後で） -->
+      <!-- Tabs -->
       <nav class="grid grid-cols-4 gap-2 pt-2">
         <NuxtLink
           :to="`/users/${userId}`"
@@ -229,7 +229,7 @@ const toggleFollow = async () => {
 }
 
 // buttons
-const onEditProfile = () => navigateTo('/profile/edit') // ⭐️後で作る
+const onEditProfile = () => navigateTo('/profile/edit') 
 const onOpenFollowing = () => navigateTo(`/users/${userId.value}/following`)
 const onOpenFollowers = () => navigateTo(`/users/${userId.value}/followers`)
 

@@ -146,7 +146,7 @@
                 class="block w-full max-w-sm max-h-[18rem] rounded-2xl object-cover"
               >
             </div>
-                      </NuxtLink>
+          </NuxtLink>
         </div>
 
         <!-- 3) Normal -->
@@ -159,6 +159,7 @@
       <div v-if="mediaCount === 1" class="mt-3 flex justify-center">
         <img
           :src="firstMedia?.url"
+          loading="lazy"
           alt="Post media"
           class="block w-full max-w-md max-h-[20rem] rounded-2xl object-cover"
         >
@@ -168,6 +169,7 @@
           v-for="media in mediaList"
           :key="media.id"
           :src="media.url"
+          loading="lazy"
           alt="Post media"
           class="block aspect-square w-full rounded-xl object-cover"
         >

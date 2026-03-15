@@ -86,31 +86,31 @@ Route::middleware('auth:sanctum')->group(function () {
     // Post repost destroy
     Route::delete('/posts/{post}/repost', [PostRepostController::class, 'destroy']);
 
-  //------- My page -------
-   // Follow store
-   Route::post('/users/{user}/follow', [FollowController::class, 'store']);
+    // Follow store
+    Route::post('/users/{user}/follow', [FollowController::class, 'store']);
     // Follow destroy
     Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
+
+    //------- My page -------
     // Mypage Top(defalt: post tab)
     Route::get('/users/{user}', [UserController::class, 'show']);
     // Following
     Route::get('/users/{user}/following', [UserFollowListController::class, 'following']);
     // Follower
     Route::get('/users/{user}/followers', [UserFollowListController::class, 'followers']);
-    // Mypage comment tab
+    // Comment tab
     Route::get('/users/{user}/comments', [UserController::class, 'comments']);
-  // Mypage media tab
-
-
-    // Mypage liked tab
+    // Media tab
+    Route::get('/users/{user}/media-posts', [UserController::class, 'mediaPosts']);
+    // Liked tab
     Route::get('/users/{user}/liked-posts', [UserController::class, 'likedPosts']);
-    //Mypage bio
+    // Bio
     Route::get('/me', [MeController::class, 'show']);
-    // Mypage bio edit
+    // Bio edit
     Route::patch('/me/profile', [MeController::class, 'updateProfile']);
-    //Mypage avator post
+    // Avator post
     Route::post('/me/avatar', [MeController::class, 'uploadAvatar']);
-    //Mypage avator 
+    // Avator delete 
     Route::delete('/me/avatar', [MeController::class, 'deleteAvatar']);
 
 

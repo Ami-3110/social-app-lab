@@ -63,6 +63,47 @@ class UserController extends Controller
     return response()->json($comments);
   }
 
+  public function mediaPosts(Request $request, User $user)
+  {
+    $me = $request->user();
+
+    if (!$me) {
+      return response()->json(['message' => 'Unauthenticated.'], 401);
+    }
+
+    $meId = $me->id;
+
+    $query = Post::query()
+      ->latest()
+      ->where('user_id', $user->id)
+      ->whereHas('media')
+      ->with([
+        'user:id,name,avatar_path',
+        'media',
+        'originalPost.user:id,name,avatar_path',
+        'originalPost.media',
+        'repostOfComment.user:id,name,avatar_path',
+        'repostOfComment.post.user:id,name,avatar_path',
+        'repostOfComment.post.media',
+      ])
+      ->withCount([
+        'likes',
+        'comments',
+        'reposts as reposts_count',
+
+        'likedUsers as is_liked' =>
+        fn($q2) => $q2->where('user_id', $meId),
+
+        'bookmarkedBy as is_bookmarked' =>
+        fn($q2) => $q2->where('user_id', $meId),
+
+        'reposts as is_reposted' =>
+        fn($q2) => $q2->where('user_id', $meId),
+      ]);
+
+    return $query->paginate(5)->withQueryString();
+  }
+
   public function likedPosts(User $user)
   {
     $meId = Auth::id();
