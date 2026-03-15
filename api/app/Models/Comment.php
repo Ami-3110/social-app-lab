@@ -1,5 +1,4 @@
 <?php
-// app/Models/Comment.php
 
 namespace App\Models;
 
@@ -61,5 +60,10 @@ class Comment extends Model
   public function repostPosts()
   {
     return $this->hasMany(Post::class, 'repost_of_comment_id');
+  }
+
+  public function media(): HasMany
+  {
+    return $this->hasMany(CommentMedia::class)->orderBy('sort_order');
   }
 }

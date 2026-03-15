@@ -153,12 +153,17 @@ export const usePosts = (options: UsePostsOptions = {}) => {
   }
 
   // comment
-  const submitComment = async (postId: number, body: string) => {
+  const submitComment = async (postId: number, payload: string | FormData) => {
+    const body =
+      typeof payload === 'string'
+        ? { body: payload }
+        : payload
+
     const res = await $apiFetch<{ data: Comment }>(`/posts/${postId}/comments`, {
       method: 'POST',
-      body: { body },
+      body,
     })
-    await refresh()
+
     return res.data
   }
 

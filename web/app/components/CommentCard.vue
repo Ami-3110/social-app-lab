@@ -81,7 +81,25 @@
         {{ comment.body }}
       </div>
     </div>
-
+    <div v-if="comment.media?.length" class="mt-2 space-y-2">
+      <div
+        v-if="comment.media?.length"
+        :class="comment.media.length === 1
+          ? 'mt-2'
+          : 'mt-2 grid grid-cols-2 gap-2'"
+      >
+        <img
+          v-for="media in comment.media"
+          :key="media.id"
+          :src="media.url"
+          alt=""
+          class="w-full rounded-xl ui-border-all object-cover"
+          :class="comment.media.length === 1
+            ? 'max-h-80'
+            : 'aspect-square'"
+        />
+      </div>
+    </div>
     <div class="mt-2 px-8">
       <ActionBar
         :is-liked="comment.is_liked ?? false"
@@ -131,12 +149,12 @@ const draft = ref('')
 const startEdit = () => {
   menuOpen.value = false
   editing.value = true
-  draft.value = props.comment.body
+  draft.value = props.comment.body ?? ''
 }
 
 const cancelEdit = () => {
   editing.value = false
-  draft.value = props.comment.body
+  draft.value = props.comment.body ?? ''
 }
 
 const saveEdit = async () => {

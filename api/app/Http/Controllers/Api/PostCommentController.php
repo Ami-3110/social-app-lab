@@ -7,9 +7,7 @@ use App\Models\Post;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Log;
-
+use App\Http\Requests\StoreCommentRequest;
 
 class PostCommentController extends Controller
 {
@@ -20,7 +18,8 @@ class PostCommentController extends Controller
     $comments = $post->comments()
       ->with([
         'user:id,name,avatar_path',
-        'parent.user:id,name,avatar_path'
+        'parent.user:id,name,avatar_path',
+        'media',
       ])
       ->withCount([
         'likes',
@@ -50,6 +49,16 @@ class PostCommentController extends Controller
           ->exists()
           : false;
 
+        //comment-media
+        $comment->setRelation('media', $comment->media->map(function ($media) {
+          return (object) [
+            'id' => $media->id,
+            'path' => $media->path,
+            'url' => asset('storage/' . $media->path),
+            'sort_order' => $media->sort_order,
+          ];
+        })->values());
+
         return $comment;
       })
     );
@@ -57,12 +66,9 @@ class PostCommentController extends Controller
     return response()->json($comments);
   }
 
-  public function store(Request $request, Post $post)
+  public function store(StoreCommentRequest $request, Post $post)
   {
-    $data = $request->validate([
-      'body' => ['required', 'string', 'max:280'], // 文字数は好みで
-      'parent_id' => ['nullable', 'integer', 'exists:comments,id'],
-    ]);
+    $data = $request->validated();
 
     return DB::transaction(function () use ($data, $post, $request) {
       $userId = $request->user()->id;
@@ -73,43 +79,42 @@ class PostCommentController extends Controller
           ->whereKey($data['parent_id'])
           ->firstOrFail();
 
-        // 別投稿への返信は禁止
         if ((int)$parent->post_id !== (int)$post->id) {
           abort(422, 'parent_id is invalid for this post.');
         }
       }
 
-      // まずコメント作成（root_idは後で確定させる）
       $comment = Comment::create([
         'post_id' => $post->id,
         'user_id' => $userId,
-        'body' => $data['body'],
+        'body' => $data['body'] ?? null,
         'parent_id' => $parent?->id,
-        // root_id はこの時点では未確定（トップレベルは自分IDが必要）
       ]);
 
-      // root_id の決定
       if ($parent) {
-        // 親がトップレベルなら root_id は親
-        // 親が返信なら root_id は親の root_id
-        $rootId = $parent->root_id ?? $parent->id;
-
-        $comment->root_id = $rootId;
+        $comment->root_id = $parent->root_id ?? $parent->id;
         $comment->save();
       } else {
-        // トップレベル：自分がroot
         $comment->root_id = $comment->id;
         $comment->save();
       }
 
-      // 返却用に必要リレーションをロード
-      $comment->load([
-        'user:id,name,avatar_path', // PublicUser相当
-        'parent.user:id,name,avatar_path',
-      ]);
+      if ($request->hasFile('media')) {
+        foreach ($request->file('media') as $index => $file) {
+          $path = $file->store('comments', 'public');
 
-      // is_liked / is_bookmarked / count系をここで付与するならここで
-      // （あなたは最初から数える想定なので後で統一してOK）
+          $comment->media()->create([
+            'path' => $path,
+            'sort_order' => $index,
+          ]);
+        }
+      }
+
+      $comment->load([
+        'user:id,name,avatar_path',
+        'parent.user:id,name,avatar_path',
+        'media',
+      ]);
 
       return response()->json([
         'data' => $this->commentResource($comment, $request->user()->id),
@@ -156,7 +161,7 @@ class PostCommentController extends Controller
       'user' => [
         'id' => $comment->user->id,
         'name' => $comment->user->name,
-        'image' => $comment->user->image,
+        'avatar_path' => $comment->user->avatar_path,
       ],
 
       'parent' => $comment->parent ? [
@@ -165,11 +170,17 @@ class PostCommentController extends Controller
         'user' => [
           'id' => $comment->parent->user->id,
           'name' => $comment->parent->user->name,
-          'image' => $comment->parent->user->image,
+          'avatar_path' => $comment->parent->user->avatar_path,
         ],
       ] : null,
-
-
+      
+      'media' => $comment->media->map(fn($media) => [
+        'id' => $media->id,
+        'path' => $media->path,
+        'url' => asset('storage/' . $media->path),
+        'sort_order' => $media->sort_order,
+      ])->values(),
+      
       'likes_count' => $comment->likes_count ?? 0,
       'replies_count' => $comment->replies_count ?? 0,
       'reposts_count' => $comment->reposts_count ?? 0,
@@ -179,5 +190,4 @@ class PostCommentController extends Controller
     ];
   }
 
-  
 }

@@ -181,6 +181,14 @@
             class="flex-1 rounded ui-border-all ui-bg px-3 py-2 text-sm"
             placeholder="Write a comment..."
           />
+          <input
+            ref="fileInputRef"
+            type="file"
+            multiple
+            accept="image/*"
+            @change="handleFileChange"
+            class="text-xs"
+          />
           <button
             type="submit"
             class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
@@ -210,6 +218,13 @@
               rows="2"
               class="w-full rounded ui-border-all ui-bg px-3 py-2 text-sm"
               :placeholder="`Reply to ${group.parent.user?.name ?? 'user'}...`"
+            />
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              @change="handleReplyFileChange(group.parent.id, $event)"
+              class="text-xs"
             />
             <div class="flex justify-end gap-2 mt-2">
               <button type="button" class="px-3 py-1 text-sm ui-border-all ui-text rounded" @click="closeReply">
@@ -362,20 +377,43 @@ const goToThread = (c: Comment) => {
 // --------- << Comment FORM >> ---------
 const body = ref('')
 
+const commentInputRef = ref<HTMLInputElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null) 
 
-const commentInputRef = ref<HTMLTextAreaElement | null>(null)
+const selectedFiles = ref<File[]>([])
+
+const handleFileChange = (e: Event) => {
+  const input = e.target as HTMLInputElement
+  if (!input.files) return
+
+  selectedFiles.value = Array.from(input.files)
+}
 
 const onSubmit = async () => {
   if (!post.value) return
+
   const text = body.value.trim()
-  if (!text) return
+  const formData = new FormData()
+
+  if (text) {
+    formData.append('body', text)
+  }
+
+  selectedFiles.value.forEach(file => {
+    formData.append('media[]', file)
+  })
 
   await $apiFetch(`/posts/${post.value.id}/comments`, {
     method: 'POST',
-    body: { body: text },
+    body: formData,
   })
 
   body.value = ''
+  selectedFiles.value = []
+  if (fileInputRef.value) {
+  fileInputRef.value.value = ''
+  }
+
   await refreshComments()
   await refresh()
 }
@@ -428,6 +466,14 @@ const onClickCommentReply = (c: Comment) => {
   openReply(c)
 }
 
+const replyFiles = ref<Record<number, File[]>>({})
+const handleReplyFileChange = (commentId: number, e: Event) => {
+  const input = e.target as HTMLInputElement
+  if (!input.files) return
+
+  replyFiles.value[commentId] = Array.from(input.files)
+}
+
 const openReply = (c: Comment) => {
   activeReplyCommentId.value = c.id
   if (replyBodies.value[c.id] == null) replyBodies.value[c.id] = ''
@@ -439,16 +485,31 @@ const closeReply = () => {
 
 const submitReply = async (parent: Comment) => {
   if (!post.value) return
+
   const text = (replyBodies.value[parent.id] ?? '').trim()
-  if (!text) return
+  const files = replyFiles.value[parent.id] ?? []
+
+  const formData = new FormData()
+
+  if (text) {
+    formData.append('body', text)
+  }
+
+  formData.append('parent_id', String(parent.id))
+
+  files.forEach(file => {
+    formData.append('media[]', file)
+  })
 
   await $apiFetch(`/posts/${post.value.id}/comments`, {
     method: 'POST',
-    body: { body: text, parent_id: parent.id },
+    body: formData,
   })
 
   replyBodies.value[parent.id] = ''
+  replyFiles.value[parent.id] = []
   activeReplyCommentId.value = null
+
   await refreshComments()
   await refresh()
 }

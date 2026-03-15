@@ -1,11 +1,12 @@
 // app/types/Comment.ts
 import type { PublicUser } from '~/types/User'
+import type { CommentMedia } from '~/types/CommentMedia'
 
 export type Comment = {
   id: number
   post_id: number
   user: PublicUser
-  body: string
+  body: string | null
 
   created_at: string
   updated_at: string
@@ -14,9 +15,11 @@ export type Comment = {
   root_id?: number | null
   parent?: {
     id: number
-    body: string
+    body: string | null
     user: PublicUser
   } | null
+
+  media?: CommentMedia[]
 
   likes_count?: number
   replies_count?: number

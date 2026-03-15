@@ -64,6 +64,8 @@
                       @bookmark="onClickCommentBookmark"
                       @comment="() => goToPostDetail(post.id)"
                       @repost="openComment"
+                      @updated="onTimelineCommentUpdated"
+                      @deleted="onTimelineCommentDeleted"
                     />
                   </div>
                   <!-- comment form -->
@@ -74,6 +76,15 @@
                       class="w-full rounded ui-border-all ui-text ui-bg placeholder:ui-muted px-3 py-2 text-sm"
                       placeholder="Write a comment..."
                     />
+
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      class="mt-2 text-xs"
+                      @change="handleCommentFileChange(post.id, $event)"
+                    />
+
                     <div class="flex justify-end mt-2">
                       <button
                         class="px-3 py-1 text-sm ui-border-all ui-text rounded"
@@ -83,7 +94,6 @@
                       </button>
                     </div>
                   </div>
-
                 </template>
               </PostCard>
             </li>
@@ -177,7 +187,15 @@ const onBookmarkChanged = async (_payload: { postId: number; isBookmarked: boole
 
 // comment
 const commentBodies = ref<Record<number, string>>({})
+const commentFiles = ref<Record<number, File[]>>({})
 const activeCommentPostId = ref<number | null>(null)
+
+  const handleCommentFileChange = (postId: number, e: Event) => {
+  const input = e.target as HTMLInputElement
+  if (!input.files) return
+
+  commentFiles.value[postId] = Array.from(input.files)
+}
 
   //comment form open/close
 const onToggleComment = (postId: number) => {
@@ -192,14 +210,46 @@ const justPostedComment = ref<{ postId: number; comment: Comment } | null>(null)
 
 const submitComment = async (postId: number) => {
   const body = (commentBodies.value[postId] ?? '').trim()
-  if (!body) return
+  const files = commentFiles.value[postId] ?? []
+
+  if (!body && files.length === 0) return
 
   await preserveScroll(async () => {
-    const comment = await posts.submitComment(postId, body)
+    const formData = new FormData()
+
+    if (body) {
+      formData.append('body', body)
+    }
+
+    files.forEach(file => {
+      formData.append('media[]', file)
+    })
+
+    const comment = await posts.submitComment(postId, formData)
     justPostedComment.value = { postId, comment }
+
     commentBodies.value[postId] = ''
+    commentFiles.value[postId] = []
     activeCommentPostId.value = null
   })
+}
+
+ // comment edit / delete
+const onTimelineCommentUpdated = (updated: Comment) => {
+  if (!justPostedComment.value) return
+  if (justPostedComment.value.comment.id !== updated.id) return
+
+  justPostedComment.value = {
+    ...justPostedComment.value,
+    comment: updated,
+  }
+}
+
+const onTimelineCommentDeleted = (commentId: number) => {
+  if (!justPostedComment.value) return
+  if (justPostedComment.value.comment.id !== commentId) return
+
+  justPostedComment.value = null
 }
 
 // Repost / Quote
