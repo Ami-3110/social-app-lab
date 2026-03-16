@@ -28,11 +28,11 @@ export default defineNuxtConfig({
     }
   },
 
-  routeRules: {
-    '/api/**': {
-      proxy: 'http://localhost:8000/api/**'
-    }
-  },
+  //routeRules: {
+  //  '/api/**': {
+  //    proxy: 'http://localhost:8000/api/**'
+  //  }
+  //},
 
   // ★ TypeScript設定
   typescript: {
