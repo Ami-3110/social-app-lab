@@ -15,7 +15,7 @@ use App\Http\Controllers\Api\CommentLikeController;
 use App\Http\Controllers\Api\CommentBookmarkController;
 use App\Http\Controllers\Api\CommentRepostController;
 use App\Http\Controllers\Api\MeController;
-
+use App\Http\Controllers\Api\NotificationController;
 
 // 動作確認用（開発中は残す）
 Route::get('/ping', function () {
@@ -132,6 +132,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Comment bookmark destroy
     Route::delete('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'destroy']);
 
+  //------- Notification -------
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+  
 });
 
 // logout
