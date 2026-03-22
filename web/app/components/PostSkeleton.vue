@@ -1,4 +1,4 @@
-<!-- app/components/PostSkeleton.vue -->
+<!-- ~/components/PostSkeleton.vue -->
 <template>
     <div class="p-5 rounded-xl border bg-white shadow-sm animate-pulse">
     <div class="flex items-center gap-3">

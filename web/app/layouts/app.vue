@@ -24,8 +24,17 @@
             <span :class="navClass(isActive)">➕ <span class="ml-2">Post</span></span>
           </NuxtLink>
 
-          <NuxtLink to="/likes" v-slot="{ isActive }" class="block">
-            <span :class="navClass(isActive)">💡 <span class="ml-2">Activity</span></span>
+          <NuxtLink to="/notifications" v-slot="{ isActive }" class="block">
+            <span :class="navClass(isActive)">💡
+              <span class="ml-2">Activity
+                <span
+                  v-if="unreadCount > 0"
+                  class="inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-xs font-semibold bg-sky-500 text-white"
+                >
+                  {{ unreadCount }}
+                </span>
+              </span>
+            </span>
           </NuxtLink>
 
           <NuxtLink to="/bookmarks" v-slot="{ isActive }" class="block">
@@ -97,6 +106,10 @@
 import { onBeforeUnmount, onMounted, ref, computed } from 'vue'
 import { useAuthState, logout } from '~/composables/useAuth'
 
+type UnreadCountResponse = {
+  count: number
+}
+
 const { user } = useAuthState()
 const myPageTo = computed(() => user.value?.id ? `/users/${user.value.id}` : '/login')
 
@@ -109,9 +122,14 @@ const navClass = (active: boolean) => {
   ].join(' ')
 }
 
-const onLogout = async () => {
-  await logout()
-}
+const { $apiFetch } = useNuxtApp()
+
+const { data: unreadResponse, refresh: refreshUnreadCount } = await useAsyncData<UnreadCountResponse>(
+  'notifications-unread-count',
+  () => $apiFetch('/notifications/unread-count'),
+)
+
+const unreadCount = computed(() => unreadResponse.value?.count ?? 0)
 
 const menuOpen = ref(false)
 const menuRoot = ref<HTMLElement | null>(null)
@@ -153,6 +171,10 @@ const toggleTheme = () => applyTheme(theme.value === 'dark' ? 'light' : 'dark')
 const themeLabel = computed(() => (theme.value === 'dark' ? 'Dark' : 'Light'))
 
 // --- logout wrapper (optional confirm)
+
+const onLogout = async () => {
+  await logout()
+}
 const onLogoutFromMenu = async () => {
   menuOpen.value = false
   await onLogout()

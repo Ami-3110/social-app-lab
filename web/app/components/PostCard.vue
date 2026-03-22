@@ -1,4 +1,4 @@
-<!-- app/components/PostCard.vue -->
+<!-- ~/components/PostCard.vue -->
 <template>
   <div class="px-5 py-3 rounded-xl ui-border-all ui-card ui-text ui-card-hover shadow-sm hover:shadow-md transition">
     <!-- カード全体クリックで詳細へ -->

@@ -133,7 +133,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/comments/{comment}/bookmark', [CommentBookmarkController::class, 'destroy']);
 
   //------- Notification -------
-
+    // read / unread
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::patch('/notifications/read-all', [NotificationController::class, 'readAll']);
+    // 
     Route::get('/notifications', [NotificationController::class, 'index']);
   
 });

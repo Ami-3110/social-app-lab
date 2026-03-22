@@ -1,3 +1,4 @@
+<!-- ~/pages.bookmarks.vue -->
 <template>
   <main class="p-6 space-y-4">
     <div class="max-w-2xl mx-auto space-y-4">
