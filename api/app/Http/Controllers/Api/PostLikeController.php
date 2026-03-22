@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class PostLikeController extends Controller
@@ -15,8 +16,23 @@ class PostLikeController extends Controller
     // unique制約あるので、firstOrCreateで安全に
     $post->likes()->firstOrCreate([
       'user_id' => $userId,
-      'post_id' => $post->id,
+      'post_id' => $post->id,      
     ]);
+
+    if ($post->user_id !== $userId) {
+      Notification::firstOrCreate(
+        [
+          'user_id' => $post->user_id,
+          'actor_id' => $userId,
+          'type' => 'like',
+          'post_id' => $post->id,
+          'comment_id' => null,
+        ],
+        [
+          'read_at' => null,
+        ]
+      );
+    }
 
     return response()->json([
       'ok' => true,

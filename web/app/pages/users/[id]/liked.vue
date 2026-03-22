@@ -41,8 +41,10 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'app', middleware: 'auth' })
 
-import { computed, ref } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+
+
 
 const route = useRoute()
 const router = useRouter()
@@ -66,4 +68,13 @@ function go(nextPage: number) {
     },
   })
 }
+watchEffect(() => {
+  console.log(
+    posts.value.map((post) => ({
+      id: post.id,
+      media: post.media,
+    }))
+  )
+})
+
 </script>

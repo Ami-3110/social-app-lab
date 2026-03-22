@@ -33,8 +33,151 @@
         >
           <div class="flex items-start justify-between gap-3">
             <div>
-              <p class="text-sm">
-                {{ notificationMessage(notification) }}
+              <p class="text-sm leading-relaxed break-words">
+                <NuxtLink
+                  v-if="actorPath(notification)"
+                  :to="actorPath(notification)!"
+                  class="font-semibold underline underline-offset-2 hover:opacity-80"
+                >
+                  @{{ notification.actor?.name ?? 'someone' }}
+                </NuxtLink>
+                <span v-else class="font-semibold">
+                  @{{ notification.actor?.name ?? 'someone' }}
+                </span>
+
+                <template v-if="notification.type === 'follow'">
+                  <span class="ml-1">followed you</span>
+                </template>
+
+                <template v-else-if="notification.type === 'like'">
+                  <span class="ml-1">liked your post</span>
+                  <NuxtLink
+                    v-if="postPath(notification)"
+                    :to="postPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ postExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'comment'">
+                  <span class="ml-1">commented</span>
+                  <NuxtLink
+                    v-if="commentPath(notification)"
+                    :to="commentPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ commentExcerpt(notification) }}"
+                  </NuxtLink>
+                  <span class="ml-1">on your post</span>
+                  <NuxtLink
+                    v-if="postPath(notification)"
+                    :to="postPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ postExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'repost'">
+                  <span class="ml-1">reposted your post</span>
+                  <NuxtLink
+                    v-if="postPath(notification)"
+                    :to="postPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ postExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'quote'">
+                  <span class="ml-1">quoted your post</span>
+                  <NuxtLink
+                    v-if="postPath(notification)"
+                    :to="postPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ postExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'bookmark'">
+                  <span class="ml-1">bookmarked your post</span>
+                  <NuxtLink
+                    v-if="postPath(notification)"
+                    :to="postPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ postExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'comment_like'">
+                  <span class="ml-1">liked your comment</span>
+                  <NuxtLink
+                    v-if="commentPath(notification)"
+                    :to="commentPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ commentExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'comment_reply'">
+                  <span class="ml-1">replied to your comment</span>
+                  <NuxtLink
+                    v-if="commentPath(notification)"
+                    :to="commentPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ commentExcerpt(notification) }}"
+                  </NuxtLink>
+                  <span class="ml-1">on</span>
+                  <NuxtLink
+                    v-if="postPath(notification)"
+                    :to="postPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ postExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'comment_repost'">
+                  <span class="ml-1">reposted your comment</span>
+                  <NuxtLink
+                    v-if="commentPath(notification)"
+                    :to="commentPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ commentExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'comment_quote'">
+                  <span class="ml-1">quoted your comment</span>
+                  <NuxtLink
+                    v-if="commentPath(notification)"
+                    :to="commentPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ commentExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else-if="notification.type === 'comment_bookmark'">
+                  <span class="ml-1">bookmarked your comment</span>
+                  <NuxtLink
+                    v-if="commentPath(notification)"
+                    :to="commentPath(notification)!"
+                    class="ml-1 underline underline-offset-2 hover:opacity-80"
+                  >
+                    "{{ commentExcerpt(notification) }}"
+                  </NuxtLink>
+                </template>
+
+                <template v-else>
+                  <span class="ml-1">sent you a notification</span>
+                </template>
               </p>
               <p class="mt-1 text-xs ui-muted">
                 {{ formatDateTime(notification.created_at) }}
@@ -70,15 +213,35 @@ type NotificationItem = {
   id: number
   user_id: number
   actor_id: number
-  type: 'follow' | 'like' | 'comment'
+  type: 'follow' | 'like' | 'comment' | 'repost' | 'quote' | 'bookmark' | 'comment_like' | 'comment_reply' | 'comment_repost' | 'comment_quote' | 'comment_bookmark'
   post_id: number | null
   comment_id: number | null
   read_at: string | null
   created_at: string
   updated_at: string
   actor: Actor | null
-  post: unknown | null
-  comment: unknown | null
+  post: NotificationPost | null
+  comment: NotificationComment | null
+}
+
+type NotificationPost = {
+  id: number
+  user_id: number
+  title: string | null
+  body: string | null
+  topic: string | null
+  repost_of_post_id: number | null
+  quote_body: string | null
+  repost_of_comment_id: number | null
+}
+
+type NotificationComment = {
+  id: number
+  post_id: number
+  user_id: number
+  body: string | null
+  parent_id: number | null
+  root_id: number | null
 }
 
 type PaginatedResponse<T> = {
@@ -119,19 +282,34 @@ onMounted(async () => {
   await refreshNuxtData('notifications-unread-count')
 })
 
-const notificationMessage = (notification: NotificationItem) => {
-  const name = notification.actor?.name ?? 'Someone'
+const actorPath = (notification: NotificationItem) => {
+  return notification.actor?.id ? `/users/${notification.actor.id}` : null
+}
 
-  switch (notification.type) {
-    case 'follow':
-      return `${name} followed you`
-    case 'like':
-      return `${name} liked your post`
-    case 'comment':
-      return `${name} commented on your post`
-    default:
-      return 'You have a new notification'
-  }
+const postPath = (notification: NotificationItem) => {
+  return notification.post_id ? `/posts/${notification.post_id}` : null
+}
+
+const commentPath = (notification: NotificationItem) => {
+  if (!notification.post_id) return null
+  if (!notification.comment_id) return `/posts/${notification.post_id}`
+  return `/posts/${notification.post_id}#comment-${notification.comment_id}`
+}
+
+const truncateText = (value: string | null | undefined, max = 28) => {
+  const text = (value ?? '').trim().replace(/\s+/g, ' ')
+  if (!text) return '...'
+  return text.length > max ? `${text.slice(0, max)}...` : text
+}
+
+const postExcerpt = (notification: NotificationItem) => {
+  return truncateText(
+    notification.post?.quote_body || notification.post?.body || notification.post?.title
+  )
+}
+
+const commentExcerpt = (notification: NotificationItem) => {
+  return truncateText(notification.comment?.body)
 }
 
 const formatDateTime = (value: string) => {

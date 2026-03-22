@@ -4,16 +4,33 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class BookmarkController extends Controller
 {
-  // 保存
   public function store(Request $request, Post $post)
   {
+    $userId = $request->user()->id;
+
     $request->user()
       ->bookmarks()
       ->syncWithoutDetaching([$post->id]);
+
+    if ($post->user_id !== $userId) {
+      Notification::firstOrCreate(
+        [
+          'user_id' => $post->user_id,
+          'actor_id' => $userId,
+          'type' => 'bookmark',
+          'post_id' => $post->id,
+          'comment_id' => null,
+        ],
+        [
+          'read_at' => null,
+        ]
+      );
+    }
 
     return response()->json([
       'bookmarked' => true,

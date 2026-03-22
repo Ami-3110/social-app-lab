@@ -109,22 +109,20 @@ class UserController extends Controller
     $meId = Auth::id();
 
     $posts = Post::query()
-      ->with(['user:id,name,avatar_path'])
-
-      // counts（ActionBar用）
+      ->select('posts.*')
+      ->join('likes', 'likes.post_id', '=', 'posts.id')
+      ->where('likes.user_id', $user->id)
+      ->with([
+        'user:id,name,avatar_path',
+        'media',
+      ])
       ->withCount(['likes', 'comments', 'reposts'])
-
-      // flags（自分がやってるか）
       ->withExists([
         'likes as is_liked' => fn($q) => $q->where('user_id', $meId),
         'reposts as is_reposted' => fn($q) => $q->where('user_id', $meId),
-      'bookmarkedBy as is_bookmarked' => fn($q) => $q->where('user_id', $meId),
+        'bookmarkedBy as is_bookmarked' => fn($q) => $q->where('user_id', $meId),
       ])
-
-      // liked posts の抽出条件（閲覧対象 user がいいねしたpost）
-      ->whereHas('likes', fn($q) => $q->where('user_id', $user->id))
-
-      ->latest()
+      ->orderByDesc('likes.created_at')
       ->paginate(10);
 
     return response()->json($posts);

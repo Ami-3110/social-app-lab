@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class CommentRepostController extends Controller
@@ -21,6 +22,29 @@ class CommentRepostController extends Controller
       'title' => '[repost]',
       'body' => '[repost]',
     ]);
+
+    if ($comment->user_id !== $userId) {
+      if ($quoteBody !== '') {
+        Notification::create([
+          'user_id' => $comment->user_id,
+          'actor_id' => $userId,
+          'type' => 'comment_quote',
+          'post_id' => $comment->post_id,
+          'comment_id' => $comment->id,
+          'read_at' => null,
+        ]);
+      } else {
+        Notification::create([
+            'user_id' => $comment->user_id,
+            'actor_id' => $userId,
+            'type' => 'comment_repost',
+            'post_id' => $comment->post_id,
+            'comment_id' => $comment->id,
+            'read_at' => null,
+          ]
+        );
+      }
+    }
 
     return response()->json([
       'message' => $quoteBody !== '' ? 'Quoted' : 'Reposted',

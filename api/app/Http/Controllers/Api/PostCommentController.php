@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\Comment;
+use App\Models\Notification;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreCommentRequest;
@@ -94,11 +96,41 @@ class PostCommentController extends Controller
       if ($parent) {
         $comment->root_id = $parent->root_id ?? $parent->id;
         $comment->save();
+
+        $recipientIds = Comment::query()
+          ->where('post_id', $post->id)
+          ->where('root_id', $comment->root_id)
+          ->pluck('user_id')
+          ->push($post->user_id)
+          ->unique()
+          ->reject(fn($id) => (int) $id === (int) $userId);
+
+        foreach ($recipientIds as $recipientId) {
+          Notification::create([
+            'user_id' => $recipientId,
+            'actor_id' => $userId,
+            'type' => 'comment_reply',
+            'post_id' => $post->id,
+            'comment_id' => $comment->id,
+            'read_at' => null,
+          ]);
+        }
       } else {
         $comment->root_id = $comment->id;
         $comment->save();
-      }
 
+        if ($post->user_id !== $userId) {
+          Notification::create([
+            'user_id' => $post->user_id,
+            'actor_id' => $userId,
+            'type' => 'comment',
+            'post_id' => $post->id,
+            'comment_id' => $comment->id,
+            'read_at' => null,
+          ]);
+        }
+      }
+      
       if ($request->hasFile('media')) {
         foreach ($request->file('media') as $index => $file) {
           $path = $file->store('comments', 'public');
