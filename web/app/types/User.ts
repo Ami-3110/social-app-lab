@@ -12,7 +12,7 @@ export type User = {
 export type PublicUser = {
     id: number
     name: string
-    bio: string | null
+    bio?: string | null
     avatar_url?: string | null
     is_following?: number | boolean
 }

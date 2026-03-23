@@ -34,6 +34,7 @@
           <div class="flex items-start justify-between gap-3">
             <div>
               <p class="text-sm leading-relaxed break-words">
+                <!-- follow -->
                 <NuxtLink
                   v-if="actorPath(notification)"
                   :to="actorPath(notification)!"
@@ -49,6 +50,7 @@
                   <span class="ml-1">followed you</span>
                 </template>
 
+                <!-- like post-->
                 <template v-else-if="notification.type === 'like'">
                   <span class="ml-1">liked your post</span>
                   <NuxtLink
@@ -60,6 +62,7 @@
                   </NuxtLink>
                 </template>
 
+                <!-- comment to post-->
                 <template v-else-if="notification.type === 'comment'">
                   <span class="ml-1">commented</span>
                   <NuxtLink
@@ -79,6 +82,7 @@
                   </NuxtLink>
                 </template>
 
+                <!-- repost post -->
                 <template v-else-if="notification.type === 'repost'">
                   <span class="ml-1">reposted your post</span>
                   <NuxtLink
@@ -90,6 +94,7 @@
                   </NuxtLink>
                 </template>
 
+                <!-- quote post -->
                 <template v-else-if="notification.type === 'quote'">
                   <span class="ml-1">quoted your post</span>
                   <NuxtLink
@@ -101,6 +106,7 @@
                   </NuxtLink>
                 </template>
 
+                <!-- bookmark post-->
                 <template v-else-if="notification.type === 'bookmark'">
                   <span class="ml-1">bookmarked your post</span>
                   <NuxtLink
@@ -112,6 +118,7 @@
                   </NuxtLink>
                 </template>
 
+                <!-- like comment -->
                 <template v-else-if="notification.type === 'comment_like'">
                   <span class="ml-1">liked your comment</span>
                   <NuxtLink
@@ -123,6 +130,7 @@
                   </NuxtLink>
                 </template>
 
+                <!-- comment to comment -->
                 <template v-else-if="notification.type === 'comment_reply'">
                   <span class="ml-1">replied to your comment</span>
                   <NuxtLink
@@ -142,6 +150,7 @@
                   </NuxtLink>
                 </template>
 
+                <!-- repost comment -->
                 <template v-else-if="notification.type === 'comment_repost'">
                   <span class="ml-1">reposted your comment</span>
                   <NuxtLink
@@ -153,6 +162,7 @@
                   </NuxtLink>
                 </template>
 
+                <!-- quote comment -->
                 <template v-else-if="notification.type === 'comment_quote'">
                   <span class="ml-1">quoted your comment</span>
                   <NuxtLink
@@ -163,7 +173,8 @@
                     "{{ commentExcerpt(notification) }}"
                   </NuxtLink>
                 </template>
-
+                
+                <!-- bookmark comment -->
                 <template v-else-if="notification.type === 'comment_bookmark'">
                   <span class="ml-1">bookmarked your comment</span>
                   <NuxtLink

@@ -9,18 +9,16 @@
         ← Back to timeline
       </NuxtLink>
 
-      <!-- ローディング -->
+      <!-- Loading -->
       <div v-if="pending">Loading...</div>
 
-      <!-- エラー -->
+      <!-- Error -->
       <div v-else-if="error" class="text-red-600">
         Failed to load posts.
       </div>
 
-      <!-- 本文 -->
+      <!-- Post -->
       <div v-else-if="post" class="space-y-4">
-
-        <!-- Post -->
         <header class="flex items-start justify-between">
           <div class="space-y-2">
             <h1 class="text-xl font-bold leading-snug">
@@ -93,12 +91,12 @@
           {{ deleteError }}
         </p>
 
-        <!-- body -->
+        <!-- Body -->
         <div
           class="p-2 rounded-xl ui-bg ui-border-all leading-relaxed whitespace-pre-wrap"
         >
-            <!-- Itself  -->
-            <div v-if="post.quote_body?.trim()" class="mt-2 whitespace-pre-wrap text-m">
+            <!-- Own body  -->
+            <div v-if="post.quote_body?.trim()" class="mt-2 whitespace-pre-wrap text-sm">
               {{ post.quote_body }}
             </div>
 
@@ -133,7 +131,7 @@
                 >
               </div>
             </div>
-          <!-- media -->
+          <!-- Media -->
           <div v-if="mediaCount === 1" class="mt-4 flex justify-center">
             <img
               :src="firstMedia?.url"
@@ -155,7 +153,7 @@
             >
           </div>
 
-          <!-- Action Bar -->
+          <!-- Action bar -->
           <ActionBar
             :is-liked="post.is_liked"
             :likes-count="post.likes_count ?? 0"
@@ -171,91 +169,54 @@
           />
         </div>
       </div>
+      <!-- Comment form -->
+      <form class="mt-4 flex gap-2" @submit.prevent="onSubmit">
+        <input
+          ref="commentInputRef"
+          v-model="body"
+          type="text"
+          class="flex-1 rounded ui-border-all ui-bg px-3 py-2 text-sm"
+          placeholder="Write a comment..."
+        />
+        <input
+          ref="fileInputRef"
+          type="file"
+          multiple
+          accept="image/*"
+          @change="handleFileChange"
+          class="text-xs"
+        />
+        <button
+          type="submit"
+          class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
+        >
+          Send
+        </button>
+      </form>
+
+      <!-- Comment list -->
+      <div v-if="commentTree.length" class="space-y-4">
+        <CommentThread
+          v-for="comment in commentTree"
+          :key="comment.id"
+          :comment="comment"
+          :depth="0"
+          :me-id="myUserId ?? null"
+          :active-reply-comment-id="activeReplyCommentId"
+          :reply-bodies="replyBodies"
+          @like="onClickCommentLike"
+          @comment="onClickCommentReply"
+          @repost="openComment"
+          @bookmark="onClickCommentBookmark"
+          @updated="onCommentUpdated"
+          @deleted="onDeleteComment"
+          @reply-file-change="handleReplyFileChange"
+          @close-reply="closeReply"
+          @submit-reply="submitReply"
+          @update-reply-body="updateReplyBody"
+        />
       </div>
-        <!-- Comment form -->
-        <form class="mt-4 flex gap-2" @submit.prevent="onSubmit">
-          <input
-            ref="commentInputRef"
-            v-model="body"
-            type="text"
-            class="flex-1 rounded ui-border-all ui-bg px-3 py-2 text-sm"
-            placeholder="Write a comment..."
-          />
-          <input
-            ref="fileInputRef"
-            type="file"
-            multiple
-            accept="image/*"
-            @change="handleFileChange"
-            class="text-xs"
-          />
-          <button
-            type="submit"
-            class="rounded px-3 py-2 text-sm ui-border-all hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
-            Send
-          </button>
-        </form>
-
-        <!-- Comment card -->
-        <div v-for="group in threaded" :key="group.parent.id" class="relative py-4 border-b ui-border">
-
-          <!-- Parent comment -->
-          <CommentCard
-            :comment="group.parent"
-            :me-id="myUserId ?? null"
-            @like="onClickCommentLike"
-            @comment="onClickCommentReply"
-            @repost="openComment"
-            @bookmark="onClickCommentBookmark"
-            @updated="onCommentUpdated"
-            @deleted="onDeleteComment"
-          />
-          <!-- Parent reply form -->
-          <div v-if="activeReplyCommentId === group.parent.id" class="mt-2">
-            <textarea
-              v-model="replyBodies[group.parent.id]"
-              rows="2"
-              class="w-full rounded ui-border-all ui-bg px-3 py-2 text-sm"
-              :placeholder="`Reply to ${group.parent.user?.name ?? 'user'}...`"
-            />
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              @change="handleReplyFileChange(group.parent.id, $event)"
-              class="text-xs"
-            />
-            <div class="flex justify-end gap-2 mt-2">
-              <button type="button" class="px-3 py-1 text-sm ui-border-all ui-text rounded" @click="closeReply">
-                Cancel
-              </button>
-              <button type="button" class="px-3 py-1 text-sm ui-border-all ui-text rounded" @click="submitReply(group.parent)">
-                Reply
-              </button>
-            </div>
-          </div>
-
-          <!-- Children area -->
-          <div
-            v-if="group.children.length"
-            class="mt-3 pl-10">
-            <div v-for="child in group.children" :key="child.id" class="mt-4">
-              <div class="ml-4 border-t ui-border">   
-                  <CommentCard
-                    :comment="child"
-                    :me-id="myUserId ?? null"
-                    @like="onClickCommentLike"
-                    @comment="() => goToThread(child)"
-                    @repost="openComment"
-                    @bookmark="onClickCommentBookmark"
-                    @updated="onCommentUpdated"
-                    @deleted="onDeleteComment"
-                  />
-              </div> 
-            </div>
-          </div>
-        </div>
+    </div>
   </main>
 </template>
 
@@ -265,45 +226,128 @@ definePageMeta({
   middleware: 'auth',
 })
 
-import { computed, ref, onBeforeUnmount, onMounted, nextTick, watch } from 'vue'
-import { usePost } from '~/composables/usePost'
-import type { Comment } from '~/types/Comment'
+import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { usePost } from '~/composables/usePost'
 import { useAuthState } from '~/composables/useAuth'
 import { useComments } from '~/composables/useComments'
+import type { Comment } from '~/types/Comment'
 
+// Base / App
 const route = useRoute()
-// NuxtApp
-const { $apiFetch } = useNuxtApp() // ← これが必要（ここでlike/bookmark叩くため）
+const { $apiFetch } = useNuxtApp()
 
-// Post data and actions
-const { data, pending, error, deleting, deleteError, deletePost, refresh } = usePost()
-
-// ✅ showが { data: post } の形でも、旧形式（post直）でも両対応
-const post = computed<any>(() => (data.value as any)?.data ?? data.value)
-  
+// Post data
+const { data, pending, error, deleteError, deletePost, refresh } = usePost()
+const post = computed<any>(() => (data.value as any)?.data ?? data.value) 
 const mediaList = computed(() => post.value?.media ?? [])
 const mediaCount = computed(() => mediaList.value.length)
 const firstMedia = computed(() => mediaList.value[0] ?? null)
-
-// ✅ コメント取得は route.params.id を使う（postが取れる前でも動く）
 const postId = computed(() => Number(route.params.id))
+
 // Auth
 const {user} = useAuthState()
 const myUserId = computed(() => user.value?.id)
 
-const isMyComment = (c: Comment) => {
-  if (!myUserId.value) return false
-  return c.user.id === myUserId.value
+// --------- << Comments INDEX >> ---------
+// Comment part paginated response type
+type Paginated<T> = {
+  data: T[]
+  current_page: number
+  last_page: number
+  per_page: number
+  total: number
 }
 
-// --------- << Action to Post >> ---------
+// Comments data
+const { data: commentsRes, refresh: refreshComments } = useAsyncData<Paginated<Comment> | null>(
+  () => (postId.value ? `post:${postId.value}:comments` : 'post::comments'),
+  async () => {
+    if (!postId.value) return null
+    return await $apiFetch<Paginated<Comment>>(`/posts/${postId.value}/comments`)
+  },
+  { default: () => null, watch: [postId], server: false }
+)
+
+const comments = computed(() => commentsRes.value?.data ?? [])
+
+type CommentNode = Comment & {
+  children: CommentNode[]
+}
+
+const buildCommentTree = (comments: Comment[]): CommentNode[] => {
+  const nodeMap = new Map<number, CommentNode>()
+  const roots: CommentNode[] = []
+
+  for (const comment of comments) {
+    nodeMap.set(comment.id, {
+      ...comment,
+      children: [],
+    })
+  }
+
+  for (const comment of comments) {
+    const node = nodeMap.get(comment.id)
+    if (!node) continue
+
+    if (comment.parent_id != null && nodeMap.has(comment.parent_id)) {
+      nodeMap.get(comment.parent_id)!.children.push(node)
+    } else {
+      roots.push(node)
+    }
+  }
+
+  const sortNodes = (nodes: CommentNode[], isRoot = false) => {
+    nodes.sort((a, b) => {
+      const aTime = new Date(a.created_at).getTime()
+      const bTime = new Date(b.created_at).getTime()
+
+      return isRoot ? bTime - aTime : aTime - bTime
+    })
+
+    for (const node of nodes) {
+      if (node.children.length) {
+        sortNodes(node.children, false)
+      }
+    }
+  }
+
+  sortNodes(roots, true)
+
+  return roots
+}
+
+const commentTree = computed<CommentNode[]>(() => {
+  return buildCommentTree(comments.value)
+})
+
+const scrollToHashComment = async () => {
+  if (!route.hash) return
+
+  await nextTick()
+
+  const el = document.querySelector(route.hash)
+  if (el) {
+    el.scrollIntoView({ behavior: 'auto', block: 'start' })
+  }
+}
+
+watch(
+  () => commentTree.value,
+  async (nodes) => {
+    if (!nodes.length) return
+    await scrollToHashComment()
+  },
+  { immediate: true, deep: true }
+)
+
+// --------- << Post actions >> ---------
 // Menu
 const menuOpen = ref(false)
+
 const toggleMenu = () => {
   menuOpen.value = !menuOpen.value
 }
-
 // Like count
 const isLiked = computed(() => Number(post.value?.is_liked ?? 0) === 1)
 
@@ -337,49 +381,10 @@ const onClickBookmark = async () => {
   await refresh()
 }
 
-// --------- << Comments INDEX >> ---------
-// Comment part paginated response type
-type Paginated<T> = {
-  data: T[]
-  current_page: number
-  last_page: number
-  per_page: number
-  total: number
-}
-
-// Comments data
-const { data: commentsRes, refresh: refreshComments } = useAsyncData<Paginated<Comment> | null>(
-  () => (postId.value ? `post:${postId.value}:comments` : 'post::comments'),
-  async () => {
-    if (!postId.value) return null
-    return await $apiFetch<Paginated<Comment>>(`/posts/${postId.value}/comments`)
-  },
-  { default: () => null, watch: [postId], server: false }
-)
-
-const comments = computed(() => commentsRes.value?.data ?? [])
-
-const threaded = computed(() => {
-  const list = comments.value
-
-  const parents = list.filter(c => !c.parent_id)
-
-  return parents.map(parent => ({
-    parent,
-    children: list.filter(c => c.parent_id === parent.id)
-  }))
-})
-
-const goToThread = (c: Comment) => {
-  navigateTo(`/comments/${c.root_id}`) // 例。あとで作るページ用
-}
-
-// --------- << Comment FORM >> ---------
+// --------- << Comment form (new comment) >> ---------
 const body = ref('')
-
 const commentInputRef = ref<HTMLInputElement | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null) 
-
 const selectedFiles = ref<File[]>([])
 
 const handleFileChange = (e: Event) => {
@@ -410,6 +415,7 @@ const onSubmit = async () => {
 
   body.value = ''
   selectedFiles.value = []
+
   if (fileInputRef.value) {
   fileInputRef.value.value = ''
   }
@@ -418,13 +424,18 @@ const onSubmit = async () => {
   await refresh()
 }
 
-// Focus comment input if ?focus=comment
+const focusCommentInput = async () => {
+  await nextTick()
+  commentInputRef.value?.focus()
+}
+
 onMounted(async () => {
   if (route.query.focus === 'comment') {
     await nextTick()
     commentInputRef.value?.focus()
   }
 })
+
 watch(post, async (p) => {
   if (!p) return
   if (route.query.focus !== 'comment') return
@@ -433,38 +444,35 @@ watch(post, async (p) => {
   commentInputRef.value?.focus()
 }, { immediate: true })
 
-const focusCommentInput = async () => {
-  await nextTick()
-  commentInputRef.value?.focus()
-}
+// --------- << Comment actions >> ---------
+// Refresh
+const commentActions = useComments({ refresh: refreshComments })
 
-
-// --------- << Action to Comment >> ---------
-// Comment Update （未実装のやつ）
+// Comment Update
 const onCommentUpdated = async () => {
   await refreshComments()
 }
 
 // Comment Delete
-const onDeleteComment = async (commentId: number) => {
+const onDeleteComment = async () => {
     await refreshComments()
     await refresh()
 }
-
-// Comment action
-const commentActions = useComments({ refresh: refreshComments })
 
 // Comment like
 const onClickCommentLike = async (c: Comment) => {
   await commentActions.toggleLike(c)
 }
+// Comment bookmark
+const onClickCommentBookmark = async (c: Comment) => {
+  await commentActions.toggleBookmark(c)
+}
 
+// --------- << Comment reply >> ---------
 // Comment reply
 const activeReplyCommentId = ref<number | null>(null)
-const replyBodies = ref<Record<number, string>>({}) // commentId -> text
-const onClickCommentReply = (c: Comment) => {
-  openReply(c)
-}
+const replyBodies = ref<Record<number, string>>({})
+const onClickCommentReply = (c: Comment) => openReply(c)
 
 const replyFiles = ref<Record<number, File[]>>({})
 const handleReplyFileChange = (commentId: number, e: Event) => {
@@ -477,6 +485,10 @@ const handleReplyFileChange = (commentId: number, e: Event) => {
 const openReply = (c: Comment) => {
   activeReplyCommentId.value = c.id
   if (replyBodies.value[c.id] == null) replyBodies.value[c.id] = ''
+}
+
+const updateReplyBody = (commentId: number, value: string) => {
+  replyBodies.value[commentId] = value
 }
 
 const closeReply = () => {
@@ -512,11 +524,6 @@ const submitReply = async (parent: Comment) => {
 
   await refreshComments()
   await refresh()
-}
-
-// Comment bookmark
-const onClickCommentBookmark = async (c: Comment) => {
-  await commentActions.toggleBookmark(c)
 }
 
 </script>
