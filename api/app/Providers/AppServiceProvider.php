@@ -11,6 +11,10 @@ use App\Models\CommentLike;
 use App\Observers\CommentLikeObserver;
 use App\Models\Post;
 use App\Observers\PostObserver;
+use App\Models\Bookmark;
+use App\Observers\BookmarkObserver;
+use App\Models\CommentBookmark;
+use App\Observers\CommentBookmarkObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,5 +35,7 @@ class AppServiceProvider extends ServiceProvider
         Like::observe(LikeObserver::class);
         CommentLike::observe(CommentLikeObserver::class);
         Post::observe(PostObserver::class);
+        Bookmark::observe(BookmarkObserver::class);
+        CommentBookmark::observe(CommentBookmarkObserver::class);
     }
 }

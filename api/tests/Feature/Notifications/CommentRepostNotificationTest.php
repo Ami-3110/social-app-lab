@@ -98,7 +98,7 @@ class CommentRepostNotificationTest extends TestCase
     $this->assertDatabaseMissing('notifications', [
       'user_id' => $otherUser->id,
       'actor_id' => $actor->id,
-      'type' => 'repost_comment',
+      'type' => 'comment_repost',
       'post_id' => $originalComment->id,
     ]);
 
@@ -129,4 +129,120 @@ class CommentRepostNotificationTest extends TestCase
     $this->assertDatabaseCount('notifications', 1);
   }
 
+  #[Test]
+  public function it_creates_a_notification_when_quoting_a_comment(): void
+  {
+    $originalCommentOwner = User::factory()->create();
+    $actor = User::factory()->create();
+
+    $post = Post::factory()->create([
+      'user_id' => $originalCommentOwner->id,
+    ]);
+
+    $originalComment = Comment::factory()->create([
+      'user_id' => $originalCommentOwner->id,
+      'post_id' => $post->id,
+    ]);
+
+    Post::factory()->create([
+      'user_id' => $actor->id,
+      'repost_of_comment_id' => $originalComment->id,
+      'quote_body' => 'quoted text',
+    ]);
+
+    $this->assertDatabaseHas('notifications', [
+      'user_id' => $originalCommentOwner->id,
+      'actor_id' => $actor->id,
+      'type' => 'comment_quote',
+      'comment_id' => $originalComment->id,
+    ]);
+  }
+
+  #[Test]
+  public function it_does_not_create_a_notification_when_quoting_own_comment(): void
+  {
+    $actor = User::factory()->create();
+
+    $post = Post::factory()->create([
+      'user_id' => $actor->id,
+    ]);
+
+    $originalComment = Comment::factory()->create([
+      'user_id' => $actor->id,
+      'post_id' => $post->id,
+    ]);
+
+    Post::factory()->create([
+      'user_id' => $actor->id,
+      'repost_of_comment_id' => $originalComment->id,
+      'quote_body' => 'quoted text',
+    ]);
+
+    $this->assertDatabaseCount('notifications', 0);
+  }
+
+  #[Test]
+  public function it_does_not_create_a_notification_for_unrelated_users_when_quoting_a_comment(): void
+  {
+    $originalCommentOwner = User::factory()->create();
+    $actor = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    $post = Post::factory()->create([
+      'user_id' => $originalCommentOwner->id,
+    ]);
+
+    $originalComment = Comment::factory()->create([
+      'user_id' => $originalCommentOwner->id,
+      'post_id' => $post->id,
+    ]);
+
+    $repost = Post::factory()->create([
+      'user_id' => $actor->id,
+      'repost_of_comment_id' => $originalComment->id,
+      'quote_body' => 'quoted text',
+    ]);
+
+    $this->assertDatabaseHas('notifications', [
+      'user_id' => $originalCommentOwner->id,
+      'actor_id' => $actor->id,
+      'type' => 'comment_quote',
+      'post_id' => $repost->id,
+      'comment_id' => $originalComment->id,
+    ]);
+
+    $this->assertDatabaseMissing('notifications', [
+      'user_id' => $otherUser->id,
+      'actor_id' => $actor->id,
+      'type' => 'comment_quote',
+      'post_id' => $repost->id,
+      'comment_id' => $originalComment->id,
+    ]);
+
+    $this->assertDatabaseCount('notifications', 1);
+  }
+
+  #[Test]
+  public function it_creates_one_notification_when_quoting_a_comment(): void
+  {
+    $originalCommentOwner = User::factory()->create();
+    $actor = User::factory()->create();
+
+    $post = Post::factory()->create([
+      'user_id' => $originalCommentOwner->id,
+    ]);
+
+    $originalComment = Comment::factory()->create([
+      'user_id' => $originalCommentOwner->id,
+      'post_id' => $post->id,
+    ]);
+
+    Post::factory()->create([
+      'user_id' => $actor->id,
+      'repost_of_comment_id' => $originalComment->id,
+      'quote_body' => 'quoted text',
+    ]);
+
+    $this->assertDatabaseCount('notifications', 1);
+  }
 }
