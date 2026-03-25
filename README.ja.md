@@ -55,8 +55,8 @@ API設計やリレーション構造を意識して実装しています。
 
 以下のER図でデータ構造を整理しています。
 
-- `er-main.svg`
-- `er-notifications.svg`
+- [er-main.svg](./er-main.svg)
+- [er-notifications.svg](./er-notifications.svg)
 
 ---
 

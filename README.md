@@ -53,8 +53,8 @@ It is designed with a focus on API structure and data relationships.
 
 ## ER Diagram
 
-- `er-main.svg`
-- `er-notifications.svg`
+- [er-main.svg](./er-main.svg)
+- [er-notifications.svg](./er-notifications.svg)
 
 ---
 
