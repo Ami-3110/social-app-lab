@@ -131,7 +131,6 @@ class PostRepostNotificationTest extends TestCase
     ]);
   }
 
-
   #[Test]
   public function it_does_not_create_a_notification_when_quoting_own_post(): void
   {
