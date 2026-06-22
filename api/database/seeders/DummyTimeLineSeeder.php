@@ -15,7 +15,7 @@ class DummyTimelineSeeder extends Seeder
     DB::transaction(function () {
       // ===== 設定 =====
       $users = [
-        ['name' => 'Ami',      'email' => 'ami@example.com'],
+        ['name' => 'Demo User',      'email' => 'demo@example.com'],
         ['name' => 'Mika',     'email' => 'mika@example.com'],
         ['name' => 'Ken',      'email' => 'ken@example.com'],
         ['name' => 'Yui',      'email' => 'yui@example.com'],
@@ -98,11 +98,11 @@ class DummyTimelineSeeder extends Seeder
       $byEmail = collect($createdUsers)->keyBy('email');
 
       $pairs = [
-        ['ami@example.com',  'mika@example.com'],
-        ['ami@example.com',  'ken@example.com'],
+        ['demo@example.com', 'mika@example.com'],
+        ['demo@example.com', 'ken@example.com'],
         ['mika@example.com', 'yui@example.com'],
         ['ken@example.com',  'taro@example.com'],
-        ['yui@example.com',  'ami@example.com'],
+        ['yui@example.com',  'demo@example.com'],
       ];
 
       foreach ($pairs as [$followerEmail, $followingEmail]) {

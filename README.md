@@ -2,6 +2,14 @@
 
 A Twitter-like social application built with Laravel (API) and Nuxt (SPA).
 
+## Demo
+
+- Frontend: https://social-app-lab.vercel.app
+
+Demo Account
+- Email: demo@example.com
+- Password: password
+
 ---
 
 ## Overview

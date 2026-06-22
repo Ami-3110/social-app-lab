@@ -1,6 +1,13 @@
 <!-- pages/register.vue -->
 <template>
   <main class="p-6 max-w-md mx-auto space-y-4">
+    <div class="mb-6 flex justify-center">
+      <img
+        src="/logo.png"
+        alt="social-app-lab"
+        class="h-24 w-auto object-contain dark:invert"
+      >
+    </div>
     <h1 class="text-xl font-bold">Registeration</h1>
 
     <!-- 上部の汎用エラー -->
