@@ -6,8 +6,12 @@
       <!-- Left Sidebar -->
       <aside class="sticky top-0 h-screen p-5 ui-card ui-border-all ui-text border-r">
         <div class="mb-6">
-          <NuxtLink to="/" class="text-xl font-bold tracking-tight ui-text">
-            tw-like
+          <NuxtLink to="/" class="inline-flex items-center">
+            <img
+              src="/logo.png"
+              alt="tw-like"
+              class="h-30 w-auto object-contain dark:invert"
+            >
           </NuxtLink>
         </div>
 
