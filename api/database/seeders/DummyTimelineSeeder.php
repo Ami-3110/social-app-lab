@@ -15,7 +15,7 @@ class DummyTimelineSeeder extends Seeder
     DB::transaction(function () {
       // ===== 設定 =====
       $users = [
-        ['name' => 'Demo User',      'email' => 'demo@example.com'],
+        ['name' => 'Demo',      'email' => 'demo@example.com'],
         ['name' => 'Mika',     'email' => 'mika@example.com'],
         ['name' => 'Ken',      'email' => 'ken@example.com'],
         ['name' => 'Yui',      'email' => 'yui@example.com'],
@@ -24,30 +24,31 @@ class DummyTimelineSeeder extends Seeder
 
       $topics = ['seeder', 'laravel', 'nuxt', 'diving', 'random'];
 
-      // 投稿文のネタ（適当でOK）
+      // 投稿文のネタ
       $titleSeeds = [
-        'Hello world',
-        'Small update',
-        'Today I learned',
-        'Hot take',
-        'Weekend vibes',
-        'Quick note',
-        'Random thought',
-        'Mini log',
-        'Status',
-        'Idea dump',
+          '新しい機能を追加しました',
+          '今日の学び',
+          '週末の記録',
+          '最近気になっていること',
+          'ちょっとした近況',
+          '作業メモ',
+          'おすすめの場所',
+          '今日のひとこと',
+          '開発の進捗',
+          '次に試したいこと',
       ];
+
       $bodySeeds = [
-        'Just testing the timeline.',
-        'Trying something new today.',
-        'This feature is getting nicer.',
-        'Need coffee.',
-        'It works on my machine!',
-        'Refactoring time.',
-        'Keeping it simple.',
-        'Shipping small changes.',
-        'I should write tests...',
-        'One step at a time.',
+          'タイムラインの表示を少し調整しました。',
+          '今日はLaravelのリレーションについて学びました。',
+          '天気が良かったので、久しぶりに散歩してきました。',
+          '少しずつ使いやすい画面になってきています。',
+          'コーヒーを飲みながら作業しています。',
+          '細かい部分をリファクタリングしました。',
+          'シンプルで分かりやすい設計を意識しています。',
+          '小さな改善を積み重ねています。',
+          '次はテストコードも追加したいです。',
+          '焦らず一歩ずつ進めます。',
       ];
 
       // ===== ユーザー作成（何回実行してもOK）=====
@@ -68,15 +69,14 @@ class DummyTimelineSeeder extends Seeder
       $dummyUserIds = collect($createdUsers)->pluck('id')->all();
 
       Post::query()
-        ->whereIn('user_id', $dummyUserIds)
-        ->where('title', 'like', '[Seed]%')
-        ->delete();
+          ->whereIn('user_id', $dummyUserIds)
+          ->delete();
 
       // ユーザーごとに5投稿ずつ作成
       $now = now();
       foreach ($createdUsers as $idx => $user) {
         for ($i = 1; $i <= 5; $i++) {
-          $title = "[Seed] {$user->name} #{$i} - " . $titleSeeds[($idx + $i) % count($titleSeeds)];
+          $title = $titleSeeds[($idx + $i) % count($titleSeeds)];
           $body  = $bodySeeds[($idx * 2 + $i) % count($bodySeeds)];
           $topic = $topics[($idx + $i) % count($topics)];
 
