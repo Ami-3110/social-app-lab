@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Notifications;
 
 use App\Models\Comment;
 use App\Models\Notification;
